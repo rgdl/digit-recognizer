@@ -12,4 +12,7 @@ DATA_DIR = ROOT_DIR / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 
+DATA = PROCESSED_DATA_DIR / "micro.pickle"
+assert DATA.exists()
+
 SEED = 777
