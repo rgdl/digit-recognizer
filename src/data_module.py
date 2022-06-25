@@ -12,10 +12,10 @@ from consts import DATA
 
 class Dataset(BaseDataset):
     def __init__(self, data: pd.DataFrame) -> None:
-        self.X = torch.Tensor(
+        self.X = torch.FloatTensor(
             data[[col for col in data if col.startswith("pixel")]].values
         )
-        self.y = torch.Tensor(data["label"].values)
+        self.y = torch.LongTensor(data["label"].values)
         self._len = len(self.X)
 
     def __len__(self) -> int:

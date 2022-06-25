@@ -13,7 +13,7 @@ from src.consts import N_FOLDS  # type: ignore
 from src.prep_data import main  # type: ignore
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def datasets() -> Dict[str, pd.DataFrame]:
     with TemporaryDirectory() as _td:
         td = Path(_td)
