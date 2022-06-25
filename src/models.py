@@ -29,12 +29,16 @@ class BaseModel(pl.LightningModule):
         super().__init__()
         self.tools = tools
 
-    def training_step(self, batch: BatchType, batch_idx: int) -> torch.Tensor:
+    def training_step(  # type: ignore
+        self,
+        batch: BatchType,
+        batch_idx: int,
+    ) -> torch.Tensor:
         x, y = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
         return loss
-    
+
     def configure_optimizers(self):
         return self.tools.opt_class(self.parameters(), **self.tools.opt_args)
 
@@ -42,14 +46,13 @@ class BaseModel(pl.LightningModule):
 class AlwaysSayZeroModel(BaseModel):
     """An extremely wrong but simple model for easy testing"""
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore
         return torch.zeros((len(x), N_CLASSES))
 
 
 class BasicLinearModel(BaseModel):
-    """
-    Something simple but trainable
-    """
+    """Something simple but trainable"""
+
     def __init__(self, tools: ModelTools) -> None:
         super().__init__(tools)
         hidden_layer_size = INPUT_SIZE // 2
@@ -59,5 +62,5 @@ class BasicLinearModel(BaseModel):
             torch.nn.Linear(hidden_layer_size, N_CLASSES),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore
         return self.net.forward(x)
