@@ -7,19 +7,28 @@ import pandas as pd  # type: ignore
 import pytest
 
 sys.path.append(str(Path(__file__).parent.parent / "src"))
-from src.consts import MICRO_DATA_PROPORTION  # type: ignore
-from src.consts import MINI_DATA_PROPORTION  # type: ignore
-from src.consts import N_FOLDS  # type: ignore
-from src.prep_data import main  # type: ignore
+from consts import MICRO_DATA_PROPORTION
+from consts import MINI_DATA_PROPORTION
+from consts import N_FOLDS
+from consts import PROCESSED_DATA_DIR
+from prep_data import main
+
+REBUILD_DATASETS = False
 
 
 @pytest.fixture(scope="session")
 def datasets() -> Dict[str, pd.DataFrame]:
-    with TemporaryDirectory() as _td:
-        td = Path(_td)
-        main(output_dir=td)
+    if REBUILD_DATASETS:
+        with TemporaryDirectory() as _td:
+            td = Path(_td)
+            main(output_dir=td)
+            return {
+                name: pd.read_pickle(td / f"{name}.pickle")
+                for name in ("full", "mini", "micro")
+            }
+    else:
         return {
-            name: pd.read_pickle(td / f"{name}.pickle")
+            name: pd.read_pickle(PROCESSED_DATA_DIR / f"{name}.pickle")
             for name in ("full", "mini", "micro")
         }
 
