@@ -37,5 +37,5 @@ EOF
 cp $script_dir/run-pip-freeze.py $upload_dir
 kaggle kernels push --path $upload_dir
 
-$script_dir/await_kernel_completion.sh $kernel_id
+$script_dir/await-kernel-completion.sh $kernel_id
 $script_dir/get-kernel-logs.sh $kernel_id
