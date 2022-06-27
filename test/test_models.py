@@ -19,15 +19,13 @@ all_models = (
 
 def test_output_shape():
     dm = DataModule(fold=0)
-    train = dm.train_dataloader()
     model_tools = ModelTools(
         opt_class=torch.optim.SGD,
         opt_args={"lr": 1e-3},
         loss_func=torch.nn.functional.cross_entropy,
     )
+    x, _ = next(iter(dm.train_dataloader()))
     for Model in all_models:
         model = Model(model_tools)
-        for x, y in train:
-            pred = model(x)
-            assert pred.shape == (BATCH_SIZE, N_CLASSES)
-            break
+        pred = model(x)
+        assert pred.shape == (BATCH_SIZE, N_CLASSES)

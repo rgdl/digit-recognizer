@@ -34,20 +34,17 @@ def test_data_module():
 def test_batching():
     dm = DataModule(fold=0)
 
-    for x, y in dm.train_dataloader():
-        assert x.shape == (BATCH_SIZE, INPUT_SIZE)
-        assert y.shape == (BATCH_SIZE,)
-        assert all((0 <= y) & (y <= 9))
-        break
+    x_train, y_train = next(iter(dm.train_dataloader()))
+    assert x_train.shape == (BATCH_SIZE, INPUT_SIZE)
+    assert y_train.shape == (BATCH_SIZE,)
+    assert all((0 <= y_train) & (y_train <= 9))
 
-    for x, y in dm.val_dataloader():
-        assert x.shape == (BATCH_SIZE, INPUT_SIZE)
-        assert y.shape == (BATCH_SIZE,)
-        assert all((0 <= y) & (y <= 9))
-        break
+    x_val, y_val = next(iter(dm.val_dataloader()))
+    assert x_val.shape == (BATCH_SIZE, INPUT_SIZE)
+    assert y_val.shape == (BATCH_SIZE,)
+    assert all((0 <= y_val) & (y_val <= 9))
 
-    for x, y in dm.test_dataloader():
-        assert x.shape == (BATCH_SIZE, INPUT_SIZE)
-        assert y.shape == (BATCH_SIZE,)
-        assert all(y == -1)
-        break
+    x_test, y_test = next(iter(dm.test_dataloader()))
+    assert x_test.shape == (BATCH_SIZE, INPUT_SIZE)
+    assert y_test.shape == (BATCH_SIZE,)
+    assert all(y_test == -1)

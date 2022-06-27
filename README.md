@@ -8,3 +8,5 @@ Some features it will include:
 * A config file that sets paths (conditional on whether we're local or on Kaggle), defines hyperparameters, and sets the dataset
 * 3 datasets: micro - to confirm code runs, mini - to iterate quickly, full - whole thing, to run on kernel and submit
 * automated tests, if possible
+
+# TODO: address pytorch warnings

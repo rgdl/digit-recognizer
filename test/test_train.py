@@ -20,5 +20,10 @@ def test_loss_can_be_reduced():
             loss_func=torch.nn.functional.cross_entropy,
         )
     )
+    batch = next(iter(data.train_dataloader()))
+    loss_before = model.training_step(batch, 0)
     trainer = pl.Trainer(max_epochs=1)
     trainer.fit(model, datamodule=data)
+    loss_after = model.training_step(batch, 0)
+
+    assert loss_after < loss_before
