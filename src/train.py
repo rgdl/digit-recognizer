@@ -6,16 +6,39 @@ Train the models!
     * hyper-parameter tuning
     * actual training
 """
-import pytorch_lighting as pl
+from typing import Any
+from typing import Dict
+from typing import Type
 
+import pytorch_lightning as pl
+
+from data_module import DataModule
 from models import ModelTools
 
-def hyperparameter_trial(
-    model: pl.LightningModule,
-    model_tools: ModelTools,
-) -> float:
-    """
-    Train `model` with `model_tools` and return the final loss value.
-    Hyperparameter tuning will then aim to minimise this value.
-    """
-    
+
+class HyperparameterTrial:
+    def __init__(
+        self,
+        ModelClass: Type,
+        model_tools: ModelTools,
+        fold: int,
+        **trainer_kwargs: Dict[str, Any],
+    ) -> None:
+        """
+        Train `model` with `model_tools` and return the validation loss
+        Hyperparameter tuning will then aim to minimise this value.
+        """
+        self.data = DataModule(fold)
+        self.model = ModelClass(model_tools)
+        self.trainer = pl.Trainer(**trainer_kwargs)  # type: ignore
+
+    def fit(self) -> None:
+        self.trainer.fit(self.model, datamodule=self.data)
+
+    def sample_loss(self) -> float:
+        batch = next(iter(self.data.train_dataloader()))
+        return self.model.training_step(batch, 0)
+
+    def validation_loss(self) -> float:
+        # TODO: implement me!
+        return 0.0
