@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict
@@ -6,7 +5,6 @@ from typing import Dict
 import pandas as pd  # type: ignore
 import pytest
 
-sys.path.append(str(Path(__file__).parent.parent / "src"))
 from consts import MICRO_DATA_PROPORTION
 from consts import MINI_DATA_PROPORTION
 from consts import N_FOLDS

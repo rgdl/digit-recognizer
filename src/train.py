@@ -16,7 +16,7 @@ from data_module import DataModule
 from models import ModelTools
 
 
-class HyperparameterTrial:
+class ModelTrainer:
     def __init__(
         self,
         ModelClass: Type,
@@ -34,11 +34,3 @@ class HyperparameterTrial:
 
     def fit(self) -> None:
         self.trainer.fit(self.model, datamodule=self.data)
-
-    def sample_loss(self) -> float:
-        batch = next(iter(self.data.train_dataloader()))
-        return self.model.training_step(batch, 0)
-
-    def validation_loss(self) -> float:
-        # TODO: implement me!
-        return 0.0

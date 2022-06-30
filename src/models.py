@@ -37,6 +37,18 @@ class BaseModel(pl.LightningModule):
         x, y = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
+        self.log_dict({"train_loss": loss})
+        return loss
+
+    def validation_step(  # type: ignore
+        self,
+        batch: BatchType,
+        batch_idx: int,
+    ) -> torch.Tensor:
+        x, y = batch
+        pred = self(x)
+        loss = self.tools.loss_func(pred, y)
+        self.log_dict({"val_loss": loss})
         return loss
 
     def configure_optimizers(self):

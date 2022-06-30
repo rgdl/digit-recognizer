@@ -1,9 +1,5 @@
-import sys
-from pathlib import Path
-
 import torch
 
-sys.path.append(str(Path(__file__).parent.parent / "src"))
 from consts import BATCH_SIZE
 from consts import N_CLASSES
 from data_module import DataModule
