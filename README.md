@@ -9,4 +9,16 @@ Some features it will include:
 * 3 datasets: micro - to confirm code runs, mini - to iterate quickly, full - whole thing, to run on kernel and submit
 * automated tests, if possible
 
+There's every chance this will mostly end up replaced by pytorch lightning
+
 # TODO: address pytorch warnings
+# TODO: make my own CLI that can work with this or any other Kaggle competition
+# TODO: protoype with a makefile
+
+## Running tests:
+```
+make tests
+```
+
+## Train model:
+

@@ -6,6 +6,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Tuple
+from typing import Type
 
 import pytorch_lightning as pl
 import torch
@@ -19,7 +20,7 @@ LossFuncType = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 
 @dataclass
 class ModelTools:
-    opt_class: torch.optim.Optimizer
+    opt_class: Type
     opt_args: Dict[str, Any]
     loss_func: LossFuncType
 

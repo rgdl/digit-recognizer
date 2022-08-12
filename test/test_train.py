@@ -11,8 +11,10 @@ from models import BasicLinearModel
 from models import ModelTools
 from train import ModelTrainer
 
+# TODO: create a fixture for a model trainer excluding the case where we make
+# TODO: a temp dir to store the logs, IF WE HAVE TO
 
-# TODO: create a fixture for a model trainer excluding the case where we make a temp dir to store the logs, IF WE HAVE TO
+
 def test_loss_can_be_reduced():
     with TemporaryDirectory() as td:
         mt = ModelTrainer(

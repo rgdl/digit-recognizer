@@ -7,7 +7,6 @@ Train the models!
     * actual training
 """
 from typing import Any
-from typing import Dict
 from typing import Type
 
 import pandas as pd  # type: ignore
@@ -16,17 +15,19 @@ import torch
 import torch.nn.functional as F
 
 from consts import N_CLASSES
+from consts import OUTPUT_DATA_DIR
 from data_module import DataModule
 from models import ModelTools
 
 
+# TODO: make use of pytorch lightning's inbuilt HP tuning stuff
 class ModelTrainer:
     def __init__(
         self,
         ModelClass: Type,
         model_tools: ModelTools,
         fold: int,
-        **trainer_kwargs: Dict[str, Any],
+        **trainer_kwargs: Any,
     ) -> None:
         """
         Train `model` with `model_tools` and return the validation loss
@@ -95,3 +96,23 @@ class ModelTrainer:
                 _get_dataset_summary("valid"),
             ]
         )
+
+
+if __name__ == "__main__":
+    from models import BasicLinearModel
+
+    mt = ModelTrainer(
+        BasicLinearModel,
+        ModelTools(
+            opt_class=torch.optim.SGD,
+            opt_args={"lr": 1e-3},
+            loss_func=torch.nn.functional.cross_entropy,
+        ),
+        fold=0,
+        **{
+            "max_epochs": 5,
+            "logger": pl.loggers.CSVLogger(str(OUTPUT_DATA_DIR)),
+        },
+    )
+
+    mt.fit()
