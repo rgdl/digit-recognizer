@@ -72,7 +72,7 @@ def test_get_output_summary():
     )
     df = mt.get_output_summary()
 
-    assert df.notna().all(axis=None)
+    assert df.notna().all(axis=None)  # type: ignore
 
     assert tuple(df.columns) == (
         "label",

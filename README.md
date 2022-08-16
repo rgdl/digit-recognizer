@@ -21,4 +21,3 @@ make tests
 ```
 
 ## Train model:
-

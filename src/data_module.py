@@ -1,6 +1,6 @@
 from typing import Tuple
 
-import pandas as pd  # type: ignore
+import pandas as pd
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
@@ -13,7 +13,13 @@ from consts import DATA
 class Dataset(BaseDataset):
     def __init__(self, data: pd.DataFrame) -> None:
         self.X = torch.FloatTensor(
-            data[[col for col in data if col.startswith("pixel")]].values
+            data[
+                [
+                    col
+                    for col in data
+                    if isinstance(col, str) and col.startswith("pixel")
+                ]
+            ].values
         )
         self.y = torch.LongTensor(data["label"].values)
         self._len = len(self.X)

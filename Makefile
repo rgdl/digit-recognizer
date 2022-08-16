@@ -9,13 +9,13 @@ train-local:
 	python src/train.py
 
 analyse-errors:
-	echo "`analyse-errors` not implemented yet"
+	echo "analyse-errors not implemented yet"
 
 tune-hyperparameters:
-	echo "`tune-hyperparameters` not implemented yet"
+	echo "tune-hyperparameters not implemented yet"
 
 run-in-kaggle:
-	echo "`run-in-kaggle` not implemented yet"
+	echo "run-in-kaggle not implemented yet"
 
 get-kaggle-results:
-	echo "`get-kaggle-results` not implemented yet"
+	echo "get-kaggle-results not implemented yet"

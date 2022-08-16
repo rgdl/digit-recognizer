@@ -9,7 +9,7 @@ Train the models!
 from typing import Any
 from typing import Type
 
-import pandas as pd  # type: ignore
+import pandas as pd
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -35,7 +35,7 @@ class ModelTrainer:
         """
         self.data = DataModule(fold)
         self.model = ModelClass(model_tools)
-        self.trainer = pl.Trainer(**trainer_kwargs)  # type: ignore
+        self.trainer = pl.Trainer(**trainer_kwargs)
 
     def fit(self) -> None:
         self.trainer.fit(self.model, datamodule=self.data)
