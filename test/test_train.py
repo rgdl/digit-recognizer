@@ -2,7 +2,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pandas as pd  # type: ignore
-import pytest
 import pytorch_lightning as pl
 import torch
 
@@ -43,22 +42,6 @@ datasets_and_dataloaders = [
 ]
 
 
-@pytest.mark.parametrize("dataset,dataloader", datasets_and_dataloaders)
-def test_batch_predict(dataset, dataloader):
-    mt = ModelTrainer(
-        BasicLinearModel,
-        ModelTools(
-            opt_class=torch.optim.SGD,
-            opt_args={"lr": 1e-3},
-            loss_func=torch.nn.functional.cross_entropy,
-        ),
-        fold=0,
-        **{"max_epochs": 3},
-    )
-    expected_shape = (len(getattr(mt.data, dataloader)().dataset), N_CLASSES)
-    assert mt.batch_predict(dataset).shape == expected_shape
-
-
 def test_get_output_summary():
     mt = ModelTrainer(
         BasicLinearModel,
@@ -84,10 +67,11 @@ def test_get_output_summary():
     assert len(df) == (
         len(mt.data.train_dataloader().dataset)
         + len(mt.data.val_dataloader().dataset)
+        + len(mt.data.test_dataloader().dataset)
     )
 
     assert df["label"].dtype == int
-    assert df["label"].min() == 0
+    assert df["label"].min() == -1
     assert df["label"].max() == 9
 
     assert df["is_valid"].dtype == bool

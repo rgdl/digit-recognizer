@@ -6,6 +6,7 @@ Train the models!
     * hyper-parameter tuning
     * actual training
 """
+from pathlib import Path
 from typing import Any
 from typing import Type
 
@@ -40,6 +41,15 @@ class ModelTrainer:
     def fit(self) -> None:
         self.trainer.fit(self.model, datamodule=self.data)
 
+    def evaluate(self) -> None:
+        if isinstance(self.trainer.logger, pl.loggers.CSVLogger):
+            self.get_output_summary().to_csv(
+                Path(self.trainer.logger.log_dir, "output_summary.csv"),
+                index=False,
+            )
+        else:
+            raise NotImplementedError
+
     def _get_dataloader(self, dataset: str) -> torch.utils.data.DataLoader:
         dataset_dataloader_map = {
             "train": self.data.train_dataloader(),
@@ -54,15 +64,8 @@ class ModelTrainer:
                 f"{list(dataset_dataloader_map.keys())}"
             )
 
-    # TODO: Change to just predict test (hard-coded)
-    def batch_predict(self, dataset: str) -> torch.Tensor:
-        preds = []
-        with torch.no_grad():
-            for x, _ in self._get_dataloader(dataset):
-                preds.append(self.model(x).cpu().detach())
-        return torch.concat(preds)
-
     def get_output_summary(self) -> pd.DataFrame:
+        # TODO: the output should link back to input files
         probability_cols = [f"prob_{i}" for i in range(N_CLASSES)]
 
         def _get_dataset_summary(dataset: str) -> pd.DataFrame:
@@ -94,6 +97,7 @@ class ModelTrainer:
             [
                 _get_dataset_summary("train"),
                 _get_dataset_summary("valid"),
+                _get_dataset_summary("test"),
             ]
         )
 
@@ -116,3 +120,4 @@ if __name__ == "__main__":
     )
 
     mt.fit()
+    mt.evaluate()
