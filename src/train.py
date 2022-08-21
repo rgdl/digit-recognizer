@@ -74,9 +74,9 @@ class ModelTrainer:
         probability_cols = [f"prob_{i}" for i in range(consts["N_CLASSES"])]
 
         def _get_dataset_summary(dataset: str) -> pd.DataFrame:
-            preds, labels = [], []
+            inds, preds, labels = [], [], []
             with torch.no_grad():
-                for x, y in self._get_dataloader(dataset):
+                for x, y, ind in self._get_dataloader(dataset):
                     preds.append(self.model(x).cpu().detach())
                     labels.append(y.cpu().detach())
             all_preds = F.softmax(torch.concat(preds), dim=1).numpy()

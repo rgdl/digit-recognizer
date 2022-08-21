@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt  # type: ignore
 import pandas as pd
 import seaborn as sns  # type: ignore
 
+# TODO: function to convert pixel vals into image
+
 
 class Analyser:
     def __init__(self, metrics: pd.DataFrame, outputs: pd.DataFrame) -> None:

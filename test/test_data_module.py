@@ -33,17 +33,17 @@ def test_data_module():
 def test_batching():
     dm = DataModule(fold=0)
 
-    x_train, y_train = next(iter(dm.train_dataloader()))
+    x_train, y_train, *_ = next(iter(dm.train_dataloader()))
     assert x_train.shape == (consts["BATCH_SIZE"], consts["INPUT_SIZE"])
     assert y_train.shape == (consts["BATCH_SIZE"],)
     assert all((0 <= y_train) & (y_train <= 9))
 
-    x_val, y_val = next(iter(dm.val_dataloader()))
+    x_val, y_val, *_ = next(iter(dm.val_dataloader()))
     assert x_val.shape == (consts["BATCH_SIZE"], consts["INPUT_SIZE"])
     assert y_val.shape == (consts["BATCH_SIZE"],)
     assert all((0 <= y_val) & (y_val <= 9))
 
-    x_test, y_test = next(iter(dm.test_dataloader()))
+    x_test, y_test, *_ = next(iter(dm.test_dataloader()))
     assert x_test.shape == (consts["BATCH_SIZE"], consts["INPUT_SIZE"])
     assert y_test.shape == (consts["BATCH_SIZE"],)
     assert all(y_test == -1)

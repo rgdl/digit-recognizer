@@ -5,15 +5,14 @@ from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import Tuple
 from typing import Type
 
 import pytorch_lightning as pl
 import torch
 
 from consts import get_consts
+from data_module import BatchType
 
-BatchType = Tuple[torch.Tensor, torch.Tensor]
 LossFuncType = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 consts = get_consts()
 
@@ -35,7 +34,7 @@ class BaseModel(pl.LightningModule):
         batch: BatchType,
         batch_idx: int,
     ) -> torch.Tensor:
-        x, y = batch
+        x, y, *_ = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
         self.log_dict({"train_loss": loss}, on_step=False, on_epoch=True)
@@ -46,7 +45,7 @@ class BaseModel(pl.LightningModule):
         batch: BatchType,
         batch_idx: int,
     ) -> torch.Tensor:
-        x, y = batch
+        x, y, *_ = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
         self.log_dict({"val_loss": loss}, on_step=False, on_epoch=True)

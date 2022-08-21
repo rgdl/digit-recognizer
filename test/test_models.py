@@ -20,7 +20,7 @@ def test_output_shape():
         opt_args={"lr": 1e-3},
         loss_func=torch.nn.functional.cross_entropy,
     )
-    x, _ = next(iter(dm.train_dataloader()))
+    x, *_ = next(iter(dm.train_dataloader()))
     for Model in all_models:
         model = Model(model_tools)
         pred = model(x)

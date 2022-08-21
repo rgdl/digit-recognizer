@@ -9,11 +9,12 @@ from torch.utils.data import Dataset as BaseDataset
 from consts import get_consts
 
 consts = get_consts()
+BatchType = Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
 
 
 class Dataset(BaseDataset):
     def __init__(self, data: pd.DataFrame) -> None:
-        self.X = torch.FloatTensor(
+        self.x = torch.FloatTensor(
             data[
                 [
                     col
@@ -23,13 +24,14 @@ class Dataset(BaseDataset):
             ].values
         )
         self.y = torch.LongTensor(data["label"].values)
-        self._len = len(self.X)
+        self.ind = torch.IntTensor(data.index)
+        self._len = len(self.x)
 
     def __len__(self) -> int:
         return self._len
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        return self.X[idx], self.y[idx]
+    def __getitem__(self, idx: int) -> BatchType:
+        return self.x[idx], self.y[idx], self.ind[idx]
 
 
 class DataModule(pl.LightningDataModule):
