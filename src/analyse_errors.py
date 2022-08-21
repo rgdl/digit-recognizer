@@ -64,7 +64,6 @@ class Analyser:
             .index
         )
         most_confused = self.outputs.loc[idx]
-        # TODO: this will be more useful once outputs contain filenames
         return most_confused
 
 

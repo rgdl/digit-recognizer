@@ -62,6 +62,7 @@ def test_get_output_summary():
     assert df.notna().all(axis=None)  # type: ignore
 
     assert tuple(df.columns) == (
+        "img_index",
         "label",
         "is_valid",
         *(f"prob_{i}" for i in range(consts["N_CLASSES"])),

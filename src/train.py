@@ -79,6 +79,7 @@ class ModelTrainer:
                 for x, y, ind in self._get_dataloader(dataset):
                     preds.append(self.model(x).cpu().detach())
                     labels.append(y.cpu().detach())
+                    inds.extend(ind.tolist())
             all_preds = F.softmax(torch.concat(preds), dim=1).numpy()
             all_labels = torch.concat(labels).numpy()
 
@@ -86,6 +87,7 @@ class ModelTrainer:
                 [
                     pd.DataFrame(
                         {
+                            "img_index": inds,
                             "label": all_labels,
                             "is_valid": dataset == "valid",
                         }
