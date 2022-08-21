@@ -11,11 +11,11 @@ from typing import Type
 import pytorch_lightning as pl
 import torch
 
-from consts import INPUT_SIZE
-from consts import N_CLASSES
+from consts import get_consts
 
 BatchType = Tuple[torch.Tensor, torch.Tensor]
 LossFuncType = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+consts = get_consts()
 
 
 @dataclass
@@ -38,7 +38,7 @@ class BaseModel(pl.LightningModule):
         x, y = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
-        self.log_dict({"train_loss": loss})
+        self.log_dict({"train_loss": loss}, on_step=False, on_epoch=True)
         return loss
 
     def validation_step(  # type: ignore
@@ -49,7 +49,7 @@ class BaseModel(pl.LightningModule):
         x, y = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
-        self.log_dict({"val_loss": loss})
+        self.log_dict({"val_loss": loss}, on_step=False, on_epoch=True)
         return loss
 
     def configure_optimizers(self):
@@ -60,7 +60,7 @@ class AlwaysSayZeroModel(BaseModel):
     """An extremely wrong but simple model for easy testing"""
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore
-        return torch.zeros((len(x), N_CLASSES))
+        return torch.zeros((len(x), consts["N_CLASSES"]))
 
 
 class BasicLinearModel(BaseModel):
@@ -68,11 +68,11 @@ class BasicLinearModel(BaseModel):
 
     def __init__(self, tools: ModelTools) -> None:
         super().__init__(tools)
-        hidden_layer_size = INPUT_SIZE // 2
+        hidden_layer_size = consts["INPUT_SIZE"] // 2
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(INPUT_SIZE, hidden_layer_size),
+            torch.nn.Linear(consts["INPUT_SIZE"], hidden_layer_size),
             torch.nn.ReLU(),
-            torch.nn.Linear(hidden_layer_size, N_CLASSES),
+            torch.nn.Linear(hidden_layer_size, consts["N_CLASSES"]),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore

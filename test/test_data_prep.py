@@ -2,16 +2,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict
 
-import pandas as pd  # type: ignore
+import pandas as pd
 import pytest
 
-from consts import MICRO_DATA_PROPORTION
-from consts import MINI_DATA_PROPORTION
-from consts import N_FOLDS
-from consts import PROCESSED_DATA_DIR
+from consts import get_consts
 from prep_data import main
 
 REBUILD_DATASETS = False
+consts = get_consts()
 
 
 @pytest.fixture(scope="session")
@@ -26,14 +24,16 @@ def datasets() -> Dict[str, pd.DataFrame]:
             }
     else:
         return {
-            name: pd.read_pickle(PROCESSED_DATA_DIR / f"{name}.pickle")
+            name: pd.read_pickle(
+                consts["PROCESSED_DATA_DIR"] / f"{name}.pickle"
+            )
             for name in ("full", "mini", "micro")
         }
 
 
 def test_datasets_contains_all_folds(datasets):
     for df in datasets.values():
-        assert {-1, *range(N_FOLDS)} == set(df["fold"])
+        assert {-1, *range(consts["N_FOLDS"])} == set(df["fold"])
 
 
 def test_datasets_have_correct_assignment_to_test_fold(datasets):
@@ -64,7 +64,9 @@ def test_correct_label_values(datasets):
 
 
 def test_datasets_have_expected_relative_sizes(datasets):
-    expected_mini = int(len(datasets["full"]) * MINI_DATA_PROPORTION)
-    expected_micro = int(len(datasets["full"]) * MICRO_DATA_PROPORTION)
+    expected_mini = int(len(datasets["full"]) * consts["MINI_DATA_PROPORTION"])
+    expected_micro = int(
+        len(datasets["full"]) * consts["MICRO_DATA_PROPORTION"]
+    )
     assert abs(1 - expected_mini / len(datasets["mini"])) < 0.01
     assert abs(1 - expected_micro / len(datasets["micro"])) < 0.01

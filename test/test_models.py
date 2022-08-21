@@ -1,12 +1,12 @@
 import torch
 
-from consts import BATCH_SIZE
-from consts import N_CLASSES
+from consts import get_consts
 from data_module import DataModule
 from models import AlwaysSayZeroModel
 from models import BasicLinearModel
 from models import ModelTools
 
+consts = get_consts()
 all_models = (
     AlwaysSayZeroModel,
     BasicLinearModel,
@@ -24,4 +24,4 @@ def test_output_shape():
     for Model in all_models:
         model = Model(model_tools)
         pred = model(x)
-        assert pred.shape == (BATCH_SIZE, N_CLASSES)
+        assert pred.shape == (consts["BATCH_SIZE"], consts["N_CLASSES"])

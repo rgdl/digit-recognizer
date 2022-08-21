@@ -1,20 +1,22 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import pandas as pd  # type: ignore
+import pandas as pd
 import pytorch_lightning as pl
 import torch
 
-from consts import N_CLASSES
+from consts import get_consts
 from models import BasicLinearModel
 from models import ModelTools
 from train import ModelTrainer
 
-# TODO: create a fixture for a model trainer excluding the case where we make
-# TODO: a temp dir to store the logs, IF WE HAVE TO
+consts = get_consts()
 
 
 def test_loss_can_be_reduced():
+    # Use smallest dataset for faster training
+    consts["DATA"] = consts["PROCESSED_DATA_DIR"] / "micro.pickle"
+
     with TemporaryDirectory() as td:
         mt = ModelTrainer(
             BasicLinearModel,
@@ -24,15 +26,17 @@ def test_loss_can_be_reduced():
                 loss_func=torch.nn.functional.cross_entropy,
             ),
             fold=0,
-            **{"max_epochs": 5, "logger": pl.loggers.CSVLogger(td)},
+            **{"max_epochs": 4, "logger": pl.loggers.CSVLogger(td)},
         )
 
         mt.fit()
         logs_df = pd.read_csv(Path(td, "lightning_logs/version_0/metrics.csv"))
-        val_loss_logs = logs_df["val_loss"].dropna()
-        first_val_loss = val_loss_logs.iloc[0]
-        last_val_loss = val_loss_logs.iloc[-1]
-        assert last_val_loss < first_val_loss
+        train_loss_logs = logs_df["train_loss"].dropna()
+        first_train_loss = train_loss_logs.iloc[0]
+        last_train_loss = train_loss_logs.iloc[-1]
+        assert (
+            last_train_loss < first_train_loss
+        ), "Try running again, as this is a potentially flaky test"
 
 
 datasets_and_dataloaders = [
@@ -60,7 +64,7 @@ def test_get_output_summary():
     assert tuple(df.columns) == (
         "label",
         "is_valid",
-        *(f"prob_{i}" for i in range(N_CLASSES)),
+        *(f"prob_{i}" for i in range(consts["N_CLASSES"])),
         "pred",
         "correct",
     )
@@ -82,7 +86,7 @@ def test_get_output_summary():
         assert df[col].max() <= 1
 
     assert df["pred"].dtype == int
-    assert df["pred"].min() == 0
-    assert df["pred"].max() == 9
+    assert df["pred"].min() >= 0
+    assert df["pred"].max() <= 9
 
     assert df["correct"].dtype == bool

@@ -15,10 +15,11 @@ import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 
-from consts import N_CLASSES
-from consts import OUTPUT_DATA_DIR
+from consts import get_consts
 from data_module import DataModule
 from models import ModelTools
+
+consts = get_consts()
 
 
 # TODO: make use of pytorch lightning's inbuilt HP tuning stuff
@@ -36,7 +37,11 @@ class ModelTrainer:
         """
         self.data = DataModule(fold)
         self.model = ModelClass(model_tools)
-        self.trainer = pl.Trainer(**trainer_kwargs)
+        self.trainer = pl.Trainer(
+            **trainer_kwargs,
+            # We log after each epoch, just setting this to silence a warning:
+            log_every_n_steps=10,
+        )
 
     def fit(self) -> None:
         self.trainer.fit(self.model, datamodule=self.data)
@@ -66,7 +71,7 @@ class ModelTrainer:
 
     def get_output_summary(self) -> pd.DataFrame:
         # TODO: the output should link back to input files
-        probability_cols = [f"prob_{i}" for i in range(N_CLASSES)]
+        probability_cols = [f"prob_{i}" for i in range(consts["N_CLASSES"])]
 
         def _get_dataset_summary(dataset: str) -> pd.DataFrame:
             preds, labels = [], []
@@ -108,6 +113,7 @@ if __name__ == "__main__":
     mt = ModelTrainer(
         BasicLinearModel,
         ModelTools(
+            # TODO: bundle into OptimiserArgs
             opt_class=torch.optim.SGD,
             opt_args={"lr": 1e-3},
             loss_func=torch.nn.functional.cross_entropy,
@@ -115,7 +121,7 @@ if __name__ == "__main__":
         fold=0,
         **{
             "max_epochs": 5,
-            "logger": pl.loggers.CSVLogger(str(OUTPUT_DATA_DIR)),
+            "logger": pl.loggers.CSVLogger(str(consts["OUTPUT_DATA_DIR"])),
         },
     )
 

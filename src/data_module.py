@@ -6,8 +6,9 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
-from consts import BATCH_SIZE
-from consts import DATA
+from consts import get_consts
+
+consts = get_consts()
 
 
 class Dataset(BaseDataset):
@@ -32,10 +33,16 @@ class Dataset(BaseDataset):
 
 
 class DataModule(pl.LightningDataModule):
+    COMMON_DATA_LOADER_ARGS = {
+        "batch_size": consts["BATCH_SIZE"],
+        "num_workers": consts["N_WORKERS"],
+        "drop_last": False,
+    }
+
     def __init__(self, fold: int):
         super().__init__()
         self.fold = fold
-        self.all_data = pd.read_pickle(DATA)
+        self.all_data = pd.read_pickle(consts["DATA"])
 
         assert 0 <= fold <= self.all_data["fold"].max()
 
@@ -46,14 +53,18 @@ class DataModule(pl.LightningDataModule):
     def train_dataloader(self):
         data = self.all_data.loc[self._train_rows].drop("fold", axis=1)
         ds = Dataset(data)
-        return DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True)
+        return DataLoader(
+            ds,
+            **self.COMMON_DATA_LOADER_ARGS,  # type: ignore
+            shuffle=True,
+        )
 
     def val_dataloader(self):
         data = self.all_data.loc[self._valid_rows].drop("fold", axis=1)
         ds = Dataset(data)
-        return DataLoader(ds, batch_size=BATCH_SIZE, shuffle=True)
+        return DataLoader(ds, **self.COMMON_DATA_LOADER_ARGS)  # type: ignore
 
     def test_dataloader(self):
         data = self.all_data.loc[self._test_rows].drop("fold", axis=1)
         ds = Dataset(data)
-        return DataLoader(ds, batch_size=BATCH_SIZE)
+        return DataLoader(ds, **self.COMMON_DATA_LOADER_ARGS)  # type: ignore

@@ -11,13 +11,6 @@ Some features it will include:
 
 There's every chance this will mostly end up replaced by pytorch lightning
 
-# TODO: address pytorch warnings
 # TODO: make my own CLI that can work with this or any other Kaggle competition
 # TODO: protoype with a makefile
 
-## Running tests:
-```
-make tests
-```
-
-## Train model:
