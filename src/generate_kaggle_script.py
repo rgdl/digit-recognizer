@@ -7,40 +7,40 @@ from typing import Set
 from typing import TextIO
 
 
-class ScriptGenImportException(ValueError):
+class ScriptGeneratorException(ValueError):
     pass
 
 
-class ScriptGenImport:
+class ScriptGenerator:
     """
     Class to handle the insertion of lines from an imported file into the main
-    script. Pass each line of the main script to `detect`. If an instance of
-    `ScriptGenImport` is returned, call its `read` method to get the contents
-    of the file being extracted.
+    script. 
 
-    `detect` looks for an import statement followed by a comment of the form:
+    Looks for an import statement followed by a comment of the form:
     "from module import item # script-gen: [/path/to/module.py]
 
     The contents of that file will be inserted in place of the import
     statement.
     """
-
-    def __init__(self, file_to_import: Path) -> None:
-        self.file_to_import = file_to_import
+    def __init__(self, main_script_path: Path, output_file_path: Path):
+        self.main_script_path = main_script_path
+        self.root_dir = main_script_path.parent
+        self.output_file_path = output_file_path
+        self.imported_modules = set()
 
     @staticmethod
-    def detect(line: str) -> Optional[Path]:
+    def detect_script_gen_tag(line: str) -> Optional[Path]:
         pattern = re.compile(r"(.*)# script-gen: (.+\.py)")
         match = re.match(pattern, line)
         if match is None:
             return None
         groups = match.groups()
         if "import" not in groups[0]:
-            raise ScriptGenImportException(
+            raise ScriptGeneratorException(
                 f"Not an import statement: '{groups[0]}'"
             )
         if groups[0].startswith("import"):
-            raise ScriptGenImportException(
+            raise ScriptGeneratorException(
                 "\n".join(
                     [
                         f"Cannot handle whole-module imports: '{groups[0]}'",
@@ -50,28 +50,15 @@ class ScriptGenImport:
             )
         return Path(groups[1])
 
-    def read(self) -> Generator[str, None, None]:
-        with open(self.file_to_import, "r") as f:
-            for line in f:
-                yield line
-
-
-class ScriptGenerator:
-    def __init__(self, main_script_path: Path, output_file_path: Path):
-        self.main_script_path = main_script_path
-        self.root_dir = main_script_path.parent
-        self.output_file_path = output_file_path
-        self.imported_modules = set()
-
     def insert_lines(self, lines: Iterable[str]) -> None:
         for line in lines:
-            file_to_import = ScriptGenImport.detect(line)
-            if file_to_import:
-                script_gen_import = ScriptGenImport(self.root_dir / file_to_import)
+            file_to_import = self.detect_script_gen_tag(line)
+            if file_to_import is not None:
                 if file_to_import in self.imported_modules:
                     continue
                 self.imported_modules.add(file_to_import)
-                self.insert_lines(script_gen_import.read())
+                with open(self.root_dir / file_to_import, "r") as f:
+                    self.insert_lines(f)
                 continue
             print(line, file=self._outfile, end="")
 

@@ -4,9 +4,8 @@ from typing import List
 
 import pytest
 
-from generate_kaggle_script import ScriptGenImport
-from generate_kaggle_script import ScriptGenImportException
 from generate_kaggle_script import ScriptGenerator
+from generate_kaggle_script import ScriptGeneratorException
 
 
 def _write_lines_to_file(lines: List[str], path: Path) -> None:
@@ -69,14 +68,14 @@ def test_detect_script_gen_instruction():
     error_cases = ("import something # script-gen: something.py",)
 
     for case in negative_cases:
-        assert ScriptGenImport.detect(case) is None
+        assert ScriptGenerator.detect_script_gen_tag(case) is None
 
     for case in positive_cases:
-        assert ScriptGenImport.detect(case) is not None
+        assert ScriptGenerator.detect_script_gen_tag(case) is not None
 
     for case in error_cases:
-        with pytest.raises(ScriptGenImportException):
-            ScriptGenImport.detect(case)
+        with pytest.raises(ScriptGeneratorException):
+            ScriptGenerator.detect_script_gen_tag(case)
 
 
 def test_only_insert_a_module_once():
