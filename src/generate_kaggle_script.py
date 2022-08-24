@@ -56,38 +56,34 @@ class ScriptGenImport:
                 yield line
 
 
-def insert_lines_into_file(
-    lines: Iterable[str],
-    file: TextIO,
-    imported_modules: Set[str],
-    main_script_dir: Path,
-) -> None:
-    for line in lines:
-        script_gen_import = ScriptGenImport.detect(line)
-        if script_gen_import:
-            if script_gen_import.file_to_import in imported_modules:
+class ScriptGenerator:
+    def __init__(self, main_script_path: Path, output_file_path: Path):
+        self.main_script_path = main_script_path
+        self.root_dir = main_script_path.parent
+        self.output_file_path = output_file_path
+        self.imported_modules = set()
+
+    def insert_lines(self, lines: Iterable[str]) -> None:
+        for line in lines:
+            script_gen_import = ScriptGenImport.detect(line)
+            if script_gen_import:
+                if script_gen_import.file_to_import in self.imported_modules:
+                    continue
+                self.imported_modules.add(script_gen_import.file_to_import)
+                self.insert_lines(script_gen_import.read(self.root_dir))
                 continue
-            imported_modules.add(script_gen_import.file_to_import)
-            insert_lines_into_file(
-                script_gen_import.read(main_script_dir),
-                file,
-                imported_modules,
-                main_script_dir
-            )
-            continue
-        print(line, file=file, end="")
+            print(line, file=self._outfile, end="")
 
 
-def generate_kaggle_script(main_script: Path, output_file: Path) -> None:
-    """
-    Insert the contents of all imported local modules, so that a script
-    contained in a single file can be uploaded and run on a Kaggle kernel
-    """
-    imported_modules = set()
-    with open(main_script, "r") as infile, open(output_file, "w") as outfile:
-        insert_lines_into_file(
-            infile,
-            outfile,
-            imported_modules,
-            main_script.parent,
-        )
+    def run(self) -> None:
+        """
+        Insert the contents of all imported local modules, so that a script
+        contained in a single file can be uploaded and run on a Kaggle kernel
+        """
+        self._infile = open(self.main_script_path, "r")
+        self._outfile = open(self.output_file_path, "w")
+        try:
+            self.insert_lines(self._infile)
+        finally:
+            self._infile.close()
+            self._outfile.close()

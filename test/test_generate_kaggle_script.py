@@ -6,7 +6,7 @@ import pytest
 
 from generate_kaggle_script import ScriptGenImport
 from generate_kaggle_script import ScriptGenImportException
-from generate_kaggle_script import generate_kaggle_script
+from generate_kaggle_script import ScriptGenerator
 
 
 def _write_lines_to_file(lines: List[str], path: Path) -> None:
@@ -34,7 +34,7 @@ def test_with_no_imports():
         original_script_lines = ["x = 'hello!'", "", "print(x)"]
         _write_lines_to_file(original_script_lines, main)
 
-        generate_kaggle_script(main, output)
+        ScriptGenerator(main, output).run()
         assert _get_file_lines(output) == original_script_lines
 
 
@@ -54,7 +54,7 @@ def test_with_simple_import():
             main,
         )
 
-        generate_kaggle_script(main, output)
+        ScriptGenerator(main, output).run()
         assert _get_file_lines(output) == [
             "def func():", "    return 'hi!'", "", "x = func()"
         ]
@@ -100,7 +100,7 @@ def test_only_insert_a_module_once():
             main,
         )
 
-        generate_kaggle_script(main, output)
+        ScriptGenerator(main, output).run()
         assert _get_file_lines(output) == [
             "def imported_func():",
             "    return 'hi!'",
@@ -144,7 +144,7 @@ def test_nested_import():
             ],
             main,
         )
-        generate_kaggle_script(main, output)
+        ScriptGenerator(main, output).run()
 
         assert _get_file_lines(output) == [
             "def nested_import_func():",
