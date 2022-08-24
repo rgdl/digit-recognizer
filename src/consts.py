@@ -18,7 +18,7 @@ def get_consts() -> Dict[str, Any]:
         PROCESSED_DATA_DIR = DATA_DIR / "processed"
         OUTPUT_DATA_DIR = DATA_DIR / "output"
 
-        DATA = PROCESSED_DATA_DIR / "micro.pickle"
+        DATA = PROCESSED_DATA_DIR / "mini.pickle"
 
         assert DATA.exists()
 
@@ -30,7 +30,7 @@ def get_consts() -> Dict[str, Any]:
             "N_CLASSES": 10,
             # Training parameters
             "N_WORKERS": 4,
-            "BATCH_SIZE": 16,
+            "BATCH_SIZE": 32,
             # Data prep
             "N_FOLDS": 5,
             "MINI_DATA_PROPORTION": 0.1,

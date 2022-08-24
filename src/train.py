@@ -122,7 +122,7 @@ if __name__ == "__main__":
         ),
         fold=0,
         **{
-            "max_epochs": 5,
+            "max_epochs": 10,
             "logger": pl.loggers.CSVLogger(str(consts["OUTPUT_DATA_DIR"])),
         },
     )

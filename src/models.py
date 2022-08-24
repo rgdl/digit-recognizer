@@ -37,7 +37,12 @@ class BaseModel(pl.LightningModule):
         x, y, *_ = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
-        self.log_dict({"train_loss": loss}, on_step=False, on_epoch=True)
+        accuracy = (pred.argmax(dim=1) == y).float().mean()
+        self.log_dict(
+            {"train_loss": loss, "train_accuracy": accuracy},
+            on_step=False,
+            on_epoch=True,
+        )
         return loss
 
     def validation_step(  # type: ignore
@@ -48,7 +53,12 @@ class BaseModel(pl.LightningModule):
         x, y, *_ = batch
         pred = self(x)
         loss = self.tools.loss_func(pred, y)
-        self.log_dict({"val_loss": loss}, on_step=False, on_epoch=True)
+        accuracy = (pred.argmax(dim=1) == y).float().mean()
+        self.log_dict(
+            {"val_loss": loss, "val_accuracy": accuracy},
+            on_step=False,
+            on_epoch=True,
+        )
         return loss
 
     def configure_optimizers(self):

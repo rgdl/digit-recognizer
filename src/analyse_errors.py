@@ -22,13 +22,13 @@ class Analyser:
         self.metrics = metrics
         self.outputs = outputs
 
-    def view_training_loss(self, output_file: Optional[str] = None) -> None:
+    def view_training_metrics(self, output_file: Optional[str] = None) -> None:
         plt.figure()
-        for col in ("train_loss", "val_loss"):
+        for col in ("train_accuracy", "val_accuracy"):
             plot_df = self.metrics.dropna(subset=[col])
             plt.plot(plot_df["step"], plot_df[col], label=col)
         plt.legend()
-        plt.title("Loss Values During Training")
+        plt.title("Accuracy Values During Training")
         if output_file:
             plt.savefig(output_file)
         else:
@@ -68,6 +68,7 @@ class Analyser:
 
 
 # TODO: method to run other functions to create an html report with the images
+# TODO: this should be able to contain data from all folds somehow
 
 
 class LogDir:
@@ -83,6 +84,6 @@ if __name__ == "__main__":
     log_dir = LogDir(sys.argv[1])
 
     analyser = Analyser(log_dir.metrics, log_dir.outputs)
-    analyser.view_training_loss()
+    analyser.view_training_metrics()
     analyser.view_confusion_matrix()
     analyser.most_confidently_wrong()
