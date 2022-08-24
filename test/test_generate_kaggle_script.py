@@ -55,7 +55,12 @@ def test_with_simple_import():
 
         ScriptGenerator(main, output).run()
         assert _get_file_lines(output) == [
-            "def func():", "    return 'hi!'", "", "x = func()"
+            "### Contents of 'imported.py' ###",
+            "def func():",
+            "    return 'hi!'",
+            "### End of 'imported.py' ###",
+            "",
+            "x = func()",
         ]
 
 
@@ -101,8 +106,10 @@ def test_only_insert_a_module_once():
 
         ScriptGenerator(main, output).run()
         assert _get_file_lines(output) == [
+            "### Contents of 'imported.py' ###",
             "def imported_func():",
             "    return 'hi!'",
+            "### End of 'imported.py' ###",
             "",
             "x = imported_func()",
         ]
@@ -144,14 +151,17 @@ def test_nested_import():
             main,
         )
         ScriptGenerator(main, output).run()
-
         assert _get_file_lines(output) == [
+            "### Contents of 'imported.py' ###",
+            "### Contents of 'nested_import.py' ###",
             "def nested_import_func():",
             "    return 'bye!'",
+            "### End of 'nested_import.py' ###",
             "",
             "print(nested_import_func())",
             "def imported_func():",
             "    return 'hi!'",
+            "### End of 'imported.py' ###",
             "",
             "x = imported_func()",
         ]

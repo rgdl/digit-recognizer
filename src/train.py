@@ -15,9 +15,9 @@ import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 
-from consts import get_consts
-from data_module import DataModule
-from models import ModelTools
+from consts import get_consts  # script-gen: consts.py
+from data_module import DataModule  # script-gen: data_module.py
+from models import ModelTools  # script-gen: models.py
 
 consts = get_consts()
 
@@ -110,7 +110,7 @@ class ModelTrainer:
 
 
 if __name__ == "__main__":
-    from models import BasicLinearModel
+    from models import BasicLinearModel  # script-gen: models.py
 
     mt = ModelTrainer(
         BasicLinearModel,

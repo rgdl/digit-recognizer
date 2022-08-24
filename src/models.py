@@ -10,8 +10,8 @@ from typing import Type
 import pytorch_lightning as pl
 import torch
 
-from consts import get_consts
-from data_module import BatchType
+from consts import get_consts  # script-gen: consts.py
+from data_module import BatchType  # script-gen: data_module.py
 
 LossFuncType = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 consts = get_consts()

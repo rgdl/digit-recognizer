@@ -17,7 +17,7 @@ tune-hyperparameters:
 	echo "tune-hyperparameters not implemented yet"
 
 generate-kaggle-script:
-	echo "generate-kaggle-script not implemented yet"
+	python src/generate_kaggle_script.py src/train.py gen/main.py
 
 run-in-kaggle:
 	# Will involve a script-generation step

@@ -1,10 +1,9 @@
 import re
+import sys
 from pathlib import Path
-from typing import Generator
 from typing import Iterable
 from typing import Optional
 from typing import Set
-from typing import TextIO
 
 
 class ScriptGeneratorException(ValueError):
@@ -14,7 +13,7 @@ class ScriptGeneratorException(ValueError):
 class ScriptGenerator:
     """
     Class to handle the insertion of lines from an imported file into the main
-    script. 
+    script.
 
     Looks for an import statement followed by a comment of the form:
     "from module import item # script-gen: [/path/to/module.py]
@@ -22,11 +21,12 @@ class ScriptGenerator:
     The contents of that file will be inserted in place of the import
     statement.
     """
+
     def __init__(self, main_script_path: Path, output_file_path: Path):
         self.main_script_path = main_script_path
         self.root_dir = main_script_path.parent
         self.output_file_path = output_file_path
-        self.imported_modules = set()
+        self.imported_modules: Set[Path] = set()
 
     @staticmethod
     def detect_script_gen_tag(line: str) -> Optional[Path]:
@@ -50,7 +50,17 @@ class ScriptGenerator:
             )
         return Path(groups[1])
 
-    def insert_lines(self, lines: Iterable[str]) -> None:
+    def _insert_one_line(self, line: str) -> None:
+        print(line, file=self._outfile, end="")
+
+    def insert_lines(
+        self,
+        lines: Iterable[str],
+        header: Optional[str] = None,
+        footer: Optional[str] = None,
+    ) -> None:
+        if header is not None:
+            self._insert_one_line(header)
         for line in lines:
             file_to_import = self.detect_script_gen_tag(line)
             if file_to_import is not None:
@@ -58,10 +68,15 @@ class ScriptGenerator:
                     continue
                 self.imported_modules.add(file_to_import)
                 with open(self.root_dir / file_to_import, "r") as f:
-                    self.insert_lines(f)
+                    self.insert_lines(
+                        f,
+                        header=f"### Contents of '{file_to_import}' ###\n",
+                        footer=f"### End of '{file_to_import}' ###\n",
+                    )
                 continue
-            print(line, file=self._outfile, end="")
-
+            self._insert_one_line(line)
+        if footer is not None:
+            self._insert_one_line(footer)
 
     def run(self) -> None:
         """
@@ -75,3 +90,10 @@ class ScriptGenerator:
         finally:
             self._infile.close()
             self._outfile.close()
+
+
+if __name__ == "__main__":
+    assert (
+        len(sys.argv) > 2
+    ), "Please provide an input file and output destination"
+    ScriptGenerator(Path(sys.argv[1]), Path(sys.argv[2])).run()

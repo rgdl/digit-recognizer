@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
-from consts import get_consts
+from consts import get_consts  # script-gen: consts.py
 
 consts = get_consts()
 BatchType = Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
