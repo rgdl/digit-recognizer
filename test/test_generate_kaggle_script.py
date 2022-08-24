@@ -72,7 +72,7 @@ def test_detect_script_gen_instruction():
         assert ScriptGenImport.detect(case) is None
 
     for case in positive_cases:
-        assert isinstance(ScriptGenImport.detect(case), ScriptGenImport)
+        assert ScriptGenImport.detect(case) is not None
 
     for case in error_cases:
         with pytest.raises(ScriptGenImportException):

@@ -2,9 +2,9 @@ import re
 from pathlib import Path
 from typing import Generator
 from typing import Iterable
+from typing import Optional
 from typing import Set
 from typing import TextIO
-from typing import Union
 
 
 class ScriptGenImportException(ValueError):
@@ -29,7 +29,7 @@ class ScriptGenImport:
         self.file_to_import = file_to_import
 
     @staticmethod
-    def detect(line: str) -> Union[None, "ScriptGenImport"]:
+    def detect(line: str) -> Optional[Path]:
         pattern = re.compile(r"(.*)# script-gen: (.+\.py)")
         match = re.match(pattern, line)
         if match is None:
@@ -48,10 +48,10 @@ class ScriptGenImport:
                     ]
                 )
             )
-        return ScriptGenImport(file_to_import=Path(groups[1]))
+        return Path(groups[1])
 
-    def read(self, main_script_dir: Path) -> Generator[str, None, None]:
-        with open(main_script_dir / self.file_to_import, "r") as f:
+    def read(self) -> Generator[str, None, None]:
+        with open(self.file_to_import, "r") as f:
             for line in f:
                 yield line
 
@@ -65,12 +65,13 @@ class ScriptGenerator:
 
     def insert_lines(self, lines: Iterable[str]) -> None:
         for line in lines:
-            script_gen_import = ScriptGenImport.detect(line)
-            if script_gen_import:
-                if script_gen_import.file_to_import in self.imported_modules:
+            file_to_import = ScriptGenImport.detect(line)
+            if file_to_import:
+                script_gen_import = ScriptGenImport(self.root_dir / file_to_import)
+                if file_to_import in self.imported_modules:
                     continue
-                self.imported_modules.add(script_gen_import.file_to_import)
-                self.insert_lines(script_gen_import.read(self.root_dir))
+                self.imported_modules.add(file_to_import)
+                self.insert_lines(script_gen_import.read())
                 continue
             print(line, file=self._outfile, end="")
 
