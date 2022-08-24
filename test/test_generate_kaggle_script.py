@@ -1,5 +1,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import List
 
 import pytest
 
@@ -8,64 +9,59 @@ from generate_kaggle_script import ScriptGenImportException
 from generate_kaggle_script import generate_kaggle_script
 
 
+def _write_lines_to_file(lines: List[str], path: Path) -> None:
+    with open(path, "w") as f:
+        for line in lines:
+            print(line, file=f)
+
+
+def _build_tag(main_file: Path, imported_file: Path) -> str:
+    """Build a tag indicating that an import needs to be in-lined"""
+    relative_path_to_imported = imported_file.relative_to(main_file.parent)
+    return f" # script-gen: {relative_path_to_imported}"
+
+
+def _get_file_lines(file: Path) -> List[str]:
+    with open(file, "r") as f:
+        return [line.rstrip("\n") for line in f.readlines()]
+
+
 def test_with_no_imports():
     with TemporaryDirectory() as td:
-        original_script_lines = ["x = 'hello!'", "", "print(x)"]
-        main_script = Path(td, "main.py")
-        with open(main_script, "w") as f:
-            for line in original_script_lines:
-                print(line, file=f)
-
+        main = Path(td, "main.py")
         output = Path(td, "output.py")
-        generate_kaggle_script(main_script, output)
-        with open(output, "r") as f:
-            output_lines = [line.rstrip("\n") for line in f.readlines()]
 
-    assert output_lines == original_script_lines
+        original_script_lines = ["x = 'hello!'", "", "print(x)"]
+        _write_lines_to_file(original_script_lines, main)
+
+        generate_kaggle_script(main, output)
+        assert _get_file_lines(output) == original_script_lines
 
 
 def test_with_simple_import():
     with TemporaryDirectory() as td:
         imported = Path(td, "imported.py")
-        with open(imported, "w") as f:
-            for line in [
-                "def imported_func():",
-                "    return 'hi!'",
-            ]:
-                print(line, file=f)
-
-        main_script = Path(td, "main.py")
-        relative_path_to_imported = imported.relative_to(main_script.parent)
-        script_gen_instruction = f" # script-gen: {relative_path_to_imported}"
-        with open(main_script, "w") as f:
-            for line in [
-                "from imported import imported_func" + script_gen_instruction,
-                "",
-                "x = imported_func()",
-            ]:
-                print(line, file=f)
-
+        main = Path(td, "main.py")
         output = Path(td, "output.py")
-        generate_kaggle_script(main_script, output)
-        with open(output, "r") as f:
-            output_lines = [line.rstrip("\n") for line in f]
 
-    expected_lines = [
-        "def imported_func():",
-        "    return 'hi!'",
-        "",
-        "x = imported_func()",
-    ]
+        _write_lines_to_file(["def func():", "    return 'hi!'"], imported)
+        _write_lines_to_file(
+            [
+                "from imported import func" + _build_tag(main, imported),
+                "",
+                "x = func()",
+            ],
+            main,
+        )
 
-    assert output_lines == expected_lines
+        generate_kaggle_script(main, output)
+        assert _get_file_lines(output) == [
+            "def func():", "    return 'hi!'", "", "x = func()"
+        ]
 
 
 def test_detect_script_gen_instruction():
-    negative_cases = (
-        "import something",
-        "from something import *",
-        "",
-    )
+    negative_cases = ("import something", "from something import *", "")
     positive_cases = (
         "from something import func  # script-gen: something.py",
         "from something import * # script-gen: something.py",
@@ -86,95 +82,77 @@ def test_detect_script_gen_instruction():
 def test_only_insert_a_module_once():
     with TemporaryDirectory() as td:
         imported = Path(td, "imported.py")
-        with open(imported, "w") as f:
-            for line in [
-                "def imported_func():",
-                "    return 'hi!'",
-            ]:
-                print(line, file=f)
+        main = Path(td, "main.py")
+        output = Path(td, "output.py")
+        import_tag = _build_tag(main, imported)
 
-        main_script = Path(td, "main.py")
-        relative_path_to_imported = imported.relative_to(main_script.parent)
-        script_gen_instruction = f" # script-gen: {relative_path_to_imported}"
-        with open(main_script, "w") as f:
-            for line in [
-                "from imported import imported_func" + script_gen_instruction,
-                "from imported import imported_func" + script_gen_instruction,
+        _write_lines_to_file(
+            ["def imported_func():", "    return 'hi!'"],
+            imported,
+        )
+        _write_lines_to_file(
+            [
+                "from imported import imported_func" + import_tag,
+                "from imported import imported_func" + import_tag,
                 "",
                 "x = imported_func()",
-            ]:
-                print(line, file=f)
+            ],
+            main,
+        )
 
-        output = Path(td, "output.py")
-        generate_kaggle_script(main_script, output)
-        with open(output, "r") as f:
-            output_lines = [line.rstrip("\n") for line in f]
-
-    expected_lines = [
-        "def imported_func():",
-        "    return 'hi!'",
-        "",
-        "x = imported_func()",
-    ]
-
-    assert output_lines == expected_lines
+        generate_kaggle_script(main, output)
+        assert _get_file_lines(output) == [
+            "def imported_func():",
+            "    return 'hi!'",
+            "",
+            "x = imported_func()",
+        ]
 
 
 def test_nested_import():
     with TemporaryDirectory() as td:
         nested_import = Path(td, "nested_import.py")
-        with open(nested_import, "w") as f:
-            for line in [
-                "def nested_import_func():",
-                "    return 'bye!'",
-            ]:
-                print(line, file=f)
-
         imported = Path(td, "imported.py")
-        relative_path_to_nested_import = nested_import.relative_to(
-            imported.parent
+        main = Path(td, "main.py")
+        output = Path(td, "output.py")
+
+        _write_lines_to_file(
+            ["def nested_import_func():", "    return 'bye!'"],
+            nested_import,
         )
-        nested_script_gen_instruction = (
-            f"   # script-gen: {relative_path_to_nested_import}"
-        )
-        with open(imported, "w") as f:
-            for line in [
+        _write_lines_to_file(
+            [
                 (
                     "from nested_import import nested_import_func"
-                    + nested_script_gen_instruction
+                    + _build_tag(imported, nested_import)
                 ),
                 "",
                 "print(nested_import_func())",
                 "def imported_func():",
                 "    return 'hi!'",
-            ]:
-                print(line, file=f)
-
-        main_script = Path(td, "main.py")
-        relative_path_to_imported = imported.relative_to(main_script.parent)
-        script_gen_instruction = f" # script-gen: {relative_path_to_imported}"
-        with open(main_script, "w") as f:
-            for line in [
-                "from imported import imported_func" + script_gen_instruction,
+            ],
+            imported,
+        )
+        _write_lines_to_file(
+            [
+                (
+                    "from imported import imported_func"
+                    + _build_tag(main, imported)
+                ),
                 "",
                 "x = imported_func()",
-            ]:
-                print(line, file=f)
+            ],
+            main,
+        )
+        generate_kaggle_script(main, output)
 
-        output = Path(td, "output.py")
-        generate_kaggle_script(main_script, output)
-        with open(output, "r") as f:
-            output_lines = [line.rstrip("\n") for line in f]
-
-    expected_lines = [
-        "def nested_import_func():",
-        "    return 'bye!'",
-        "",
-        "print(nested_import_func())",
-        "def imported_func():",
-        "    return 'hi!'",
-        "",
-        "x = imported_func()",
-    ]
-
-    assert output_lines == expected_lines
+        assert _get_file_lines(output) == [
+            "def nested_import_func():",
+            "    return 'bye!'",
+            "",
+            "print(nested_import_func())",
+            "def imported_func():",
+            "    return 'hi!'",
+            "",
+            "x = imported_func()",
+        ]
