@@ -3,3 +3,5 @@ __pycache__
 data
 .coverage
 lightning_logs
+kaggle_logs
+gen
