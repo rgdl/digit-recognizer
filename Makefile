@@ -10,19 +10,16 @@ train-local:
 	python src/train.py
 
 analyse-errors:
-	echo "analyse-errors not implemented yet"
+	python src/analyse_errors.py
 
 tune-hyperparameters:
 	# Use optuna like so: https://www.pytorchlightning.ai/blog/using-optuna-to-optimize-pytorch-lightning-hyperparameters
 	echo "tune-hyperparameters not implemented yet"
 
-generate-kaggle-script:
-	python src/generate_kaggle_script.py src/train.py gen/main.py
-
 run-in-kaggle:
-	# Will involve a script-generation step
-	make generate-kaggle-script
-	echo "run-in-kaggle not implemented yet"
+	python src/generate_kaggle_script.py src/train.py gen/main.py
+	bin/generate-kernel-metadata.sh
+	kaggle kernels push -p gen
 
 get-kaggle-results:
-	echo "get-kaggle-results not implemented yet"
+	bin/get-kaggle-results.sh
