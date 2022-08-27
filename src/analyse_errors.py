@@ -14,13 +14,16 @@ import matplotlib.pyplot as plt  # type: ignore
 import pandas as pd
 import seaborn as sns  # type: ignore
 
-# TODO: function to convert pixel vals into image
+from consts import get_consts
+
+consts = get_consts()
 
 
 class Analyser:
     def __init__(self, metrics: pd.DataFrame, outputs: pd.DataFrame) -> None:
         self.metrics = metrics
         self.outputs = outputs
+        self.data = pd.read_pickle(consts["DATA"])
 
     def view_training_metrics(self, output_file: Optional[str] = None) -> None:
         plt.figure()
@@ -52,7 +55,10 @@ class Analyser:
         sns.heatmap(cm)
         plt.show()
 
-    def most_confidently_wrong(self, n: int = 10):
+    def view_image(self):
+        pass
+
+    def most_confidently_wrong(self, n: int = 20):
         idx = (
             self.outputs.loc[
                 ~self.outputs["correct"] & self.outputs["is_valid"]
@@ -63,7 +69,29 @@ class Analyser:
             .head(n)
             .index
         )
-        most_confused = self.outputs.loc[idx]
+        most_confused = self.outputs.loc[idx].merge(
+            self.data.drop(["label", "fold"], axis=1),
+            left_on="img_index",
+            right_index=True,
+        )
+        for _, row in most_confused.iterrows():
+            pixels = (
+                row.filter(regex="pixel").values.astype(float).reshape(28, 28)
+            )
+            plt.imshow(pixels)
+            label = row["label"]
+            pred = row["pred"]
+            conf = row[f"prob_{pred}"]
+            is_valid = row["is_valid"]
+            plt.title(
+                "\n".join(
+                    [
+                        f"Label: {label}, Pred: {pred} ({100 * conf:.2f}%)",
+                        "Validation set" if is_valid else "Training set",
+                    ]
+                )
+            )
+            plt.show()
         return most_confused
 
 

@@ -1,5 +1,5 @@
 # TODO: in time this might need to become it's own CLI
-# TODO: but does that give any benefit over Make?
+# TODO: but does that give any benefit over Make? Better handling of CL args for one
 # TODO: can I use Make's feature of checking dependencies before rerunning?
 
 tests:
@@ -10,7 +10,7 @@ train-local:
 	python src/train.py
 
 analyse-errors:
-	python src/analyse_errors.py
+	python src/analyse_errors.py $(FILE)
 
 tune-hyperparameters:
 	# Use optuna like so: https://www.pytorchlightning.ai/blog/using-optuna-to-optimize-pytorch-lightning-hyperparameters
