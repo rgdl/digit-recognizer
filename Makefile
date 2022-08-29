@@ -10,7 +10,7 @@ train-local:
 	python src/train.py
 
 analyse-errors:
-	python src/analyse_errors.py $(FILE)
+	python src/analyse_errors.py $(DIR)
 
 tune-hyperparameters:
 	# Use optuna like so: https://www.pytorchlightning.ai/blog/using-optuna-to-optimize-pytorch-lightning-hyperparameters

@@ -5,6 +5,10 @@ from typing import Dict
 _consts = None
 
 
+# TOOD: separate "consts" from "config". Consts should ONLY change between
+# TOOD: environments or not al all, config can change in hyperparamter tuning
+
+
 def get_consts() -> Dict[str, Any]:
     """
     Wrapped into a function so elements can be over-ridden in tests, cached at
@@ -18,7 +22,7 @@ def get_consts() -> Dict[str, Any]:
         PROCESSED_DATA_DIR = DATA_DIR / "processed"
         OUTPUT_DATA_DIR = DATA_DIR / "output"
 
-        DATA = PROCESSED_DATA_DIR / "mini.pickle"
+        DATA = PROCESSED_DATA_DIR / "micro.pickle"
 
         assert DATA.exists()
 
@@ -31,6 +35,7 @@ def get_consts() -> Dict[str, Any]:
             # Training parameters
             "N_WORKERS": 4,
             "BATCH_SIZE": 32,
+            "MAX_EPOCHS": 3,
             # Data prep
             "N_FOLDS": 5,
             "MINI_DATA_PROPORTION": 0.1,

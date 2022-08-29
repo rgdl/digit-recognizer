@@ -58,7 +58,7 @@ class Analyser:
     def view_image(self):
         pass
 
-    def most_confidently_wrong(self, n: int = 20):
+    def most_confidently_wrong(self, n: int = 5):
         idx = (
             self.outputs.loc[
                 ~self.outputs["correct"] & self.outputs["is_valid"]
