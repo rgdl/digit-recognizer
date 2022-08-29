@@ -2,20 +2,22 @@ import pandas as pd
 import pytest
 import torch
 
-from consts import get_consts
+from config import get_config
+from consts import N_CLASSES
+from consts import PROCESSED_DATA_DIR
 from models import BasicLinearModel
 from models import ModelTools
 from train import ModelTrainer
 
-consts = get_consts()
+config = get_config()
 
 
 @pytest.fixture(scope="session")
 def trained_model():
     # Override config for fast but effective training
-    consts["DATA"] = consts["PROCESSED_DATA_DIR"] / "micro.pickle"
-    consts["MAX_EPOCHS"] = 2
-    consts["N_FOLDS"] = 1
+    config["DATA"] = PROCESSED_DATA_DIR / "micro.pickle"
+    config["MAX_EPOCHS"] = 2
+    config["N_FOLDS"] = 1
 
     mt = ModelTrainer(
         BasicLinearModel,
@@ -50,12 +52,12 @@ def test_output_summary(trained_model):
         "img_index",
         "label",
         "is_valid",
-        *(f"prob_{i}" for i in range(consts["N_CLASSES"])),
+        *(f"prob_{i}" for i in range(N_CLASSES)),
         "pred",
         "correct",
         "fold",
     )
-    assert len(df) == len(pd.read_pickle(consts["DATA"]))
+    assert len(df) == len(pd.read_pickle(config["DATA"]))
 
     assert df["label"].dtype == int
     assert df["label"].min() == -1
@@ -77,4 +79,4 @@ def test_output_summary(trained_model):
     assert df["fold"].dtype == int
     # This is the current training fold, so never -1
     assert df["fold"].min() == 0
-    assert df["fold"].max() == consts["N_FOLDS"] - 1
+    assert df["fold"].max() == config["N_FOLDS"] - 1

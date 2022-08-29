@@ -6,9 +6,9 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
-from consts import get_consts  # script-gen: consts.py
+from config import get_config  # script-gen: config.py
 
-consts = get_consts()
+config = get_config()
 BatchType = Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
 
 
@@ -36,15 +36,15 @@ class Dataset(BaseDataset):
 
 class DataModule(pl.LightningDataModule):
     COMMON_DATA_LOADER_ARGS = {
-        "batch_size": consts["BATCH_SIZE"],
-        "num_workers": consts["N_WORKERS"],
+        "batch_size": config["BATCH_SIZE"],
+        "num_workers": config["N_WORKERS"],
         "drop_last": False,
     }
 
     def __init__(self, fold: int):
         super().__init__()
         self.fold = fold
-        self.all_data = pd.read_pickle(consts["DATA"])
+        self.all_data = pd.read_pickle(config["DATA"])
 
         assert 0 <= fold <= self.all_data["fold"].max()
 

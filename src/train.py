@@ -16,13 +16,15 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from consts import get_consts  # script-gen: consts.py
+from config import get_config  # script-gen: config.py
+from consts import N_CLASSES  # script-gen: consts.py
+from consts import OUTPUT_DATA_DIR  # script-gen: consts.py
 from data_module import DataModule  # script-gen: data_module.py
 from logger import Logger  # script-gen: models.py
 from models import BaseModel  # script-gen: logger.py
 from models import ModelTools  # script-gen: logger.py
 
-consts = get_consts()
+config = get_config()
 
 
 @dataclass
@@ -31,7 +33,7 @@ class EvaluationResult:
     output_summary: pd.DataFrame
 
     def save(self):
-        output_dir = consts["OUTPUT_DATA_DIR"] / "evaluation"
+        output_dir = OUTPUT_DATA_DIR / "evaluation"
         output_dir.mkdir(exist_ok=True)
         self.metrics.to_csv(output_dir / "metrics.csv")
         self.output_summary.to_csv(output_dir / "output_summary.csv")
@@ -47,19 +49,19 @@ class ModelTrainer:
         Train `model` with `model_tools` and return the validation loss
         Hyperparameter tuning will then aim to minimise this value.
         """
-        # TODO: get modelclass and model tools from config/consts
+        # TODO: get modelclass and model tools from config/config
         self.ModelClass = ModelClass
         self.model_tools = model_tools
         self.logger = Logger()
         self.models: List[BaseModel] = []
 
     def fit(self) -> None:
-        for fold in range(consts["N_FOLDS"]):
+        for fold in range(config["N_FOLDS"]):
             model = self.ModelClass(self.model_tools)
             datamodule = DataModule(fold)
             trainer = pl.Trainer(
                 logger=self.logger,
-                max_epochs=consts["MAX_EPOCHS"],
+                max_epochs=config["MAX_EPOCHS"],
                 # We log after each epoch, this is just to silence a warning:
                 log_every_n_steps=10,
                 enable_checkpointing=False,
@@ -90,7 +92,7 @@ class ModelTrainer:
                 ),
                 pd.DataFrame(
                     all_preds,
-                    columns=[f"prob_{i}" for i in range(consts["N_CLASSES"])],
+                    columns=[f"prob_{i}" for i in range(N_CLASSES)],
                 ),
             ],
             axis=1,
@@ -101,7 +103,7 @@ class ModelTrainer:
 
     def evaluate(self) -> EvaluationResult:
         output_summary_dfs = []
-        for model, fold in zip(self.models, range(consts["N_FOLDS"])):
+        for model, fold in zip(self.models, range(config["N_FOLDS"])):
             datamodule = DataModule(fold)
             output_summary_dfs.append(
                 pd.concat(

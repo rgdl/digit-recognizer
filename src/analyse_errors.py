@@ -14,16 +14,16 @@ import matplotlib.pyplot as plt  # type: ignore
 import pandas as pd
 import seaborn as sns  # type: ignore
 
-from consts import get_consts
+from config import get_config
 
-consts = get_consts()
+config = get_config()
 
 
 class Analyser:
     def __init__(self, metrics: pd.DataFrame, outputs: pd.DataFrame) -> None:
         self.metrics = metrics
         self.outputs = outputs
-        self.data = pd.read_pickle(consts["DATA"])
+        self.data = pd.read_pickle(config["DATA"])
 
     def view_training_metrics(self, output_file: Optional[str] = None) -> None:
         plt.figure()

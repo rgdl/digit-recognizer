@@ -10,11 +10,11 @@ from typing import Type
 import pytorch_lightning as pl
 import torch
 
-from consts import get_consts  # script-gen: consts.py
+from consts import INPUT_SIZE  # script-gen: consts.py
+from consts import N_CLASSES  # script-gen: consts.py
 from data_module import BatchType  # script-gen: data_module.py
 
 LossFuncType = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
-consts = get_consts()
 
 
 @dataclass
@@ -69,7 +69,7 @@ class AlwaysSayZeroModel(BaseModel):
     """An extremely wrong but simple model for easy testing"""
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore
-        return torch.zeros((len(x), consts["N_CLASSES"]))
+        return torch.zeros((len(x), N_CLASSES))
 
 
 class BasicLinearModel(BaseModel):
@@ -77,11 +77,11 @@ class BasicLinearModel(BaseModel):
 
     def __init__(self, tools: ModelTools) -> None:
         super().__init__(tools)
-        hidden_layer_size = consts["INPUT_SIZE"] // 2
+        hidden_layer_size = INPUT_SIZE // 2
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(consts["INPUT_SIZE"], hidden_layer_size),
+            torch.nn.Linear(INPUT_SIZE, hidden_layer_size),
             torch.nn.ReLU(),
-            torch.nn.Linear(hidden_layer_size, consts["N_CLASSES"]),
+            torch.nn.Linear(hidden_layer_size, N_CLASSES),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore

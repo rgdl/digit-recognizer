@@ -1,12 +1,16 @@
-from consts import get_consts
+from config import get_config
+from consts import INPUT_SIZE
+from consts import PROCESSED_DATA_DIR
+from consts import TEST_DATA_ROWS
+from consts import TRAIN_DATA_ROWS
 from data_module import DataModule
 
-consts = get_consts()
+config = get_config()
 
 
 def test_data_module():
     # Use larger dataset, because micro dataset requires huge tolerance
-    consts["DATA"] = consts["PROCESSED_DATA_DIR"] / "full.pickle"
+    config["DATA"] = PROCESSED_DATA_DIR / "full.pickle"
 
     dm = DataModule(fold=0)
     train = dm.train_dataloader()
@@ -16,13 +20,11 @@ def test_data_module():
     # High tolerance needed for micro dataset
     tol = 3e-2
 
-    expected_train_valid_ratio = 1 / (consts["N_FOLDS"] - 1)
+    expected_train_valid_ratio = 1 / (config["N_FOLDS"] - 1)
     actual_train_valid_ratio = len(valid) / len(train)
     assert abs(expected_train_valid_ratio - actual_train_valid_ratio) < tol
 
-    expected_test_to_non_test_ratio = (
-        consts["TEST_DATA_ROWS"] / consts["TRAIN_DATA_ROWS"]
-    )
+    expected_test_to_non_test_ratio = TEST_DATA_ROWS / TRAIN_DATA_ROWS
     actual_test_to_non_test_ratio = len(test) / (len(train) + len(valid))
     assert (
         abs(expected_test_to_non_test_ratio - actual_test_to_non_test_ratio)
@@ -34,16 +36,16 @@ def test_batching():
     dm = DataModule(fold=0)
 
     x_train, y_train, *_ = next(iter(dm.train_dataloader()))
-    assert x_train.shape == (consts["BATCH_SIZE"], consts["INPUT_SIZE"])
-    assert y_train.shape == (consts["BATCH_SIZE"],)
+    assert x_train.shape == (config["BATCH_SIZE"], INPUT_SIZE)
+    assert y_train.shape == (config["BATCH_SIZE"],)
     assert all((0 <= y_train) & (y_train <= 9))
 
     x_val, y_val, *_ = next(iter(dm.val_dataloader()))
-    assert x_val.shape == (consts["BATCH_SIZE"], consts["INPUT_SIZE"])
-    assert y_val.shape == (consts["BATCH_SIZE"],)
+    assert x_val.shape == (config["BATCH_SIZE"], INPUT_SIZE)
+    assert y_val.shape == (config["BATCH_SIZE"],)
     assert all((0 <= y_val) & (y_val <= 9))
 
     x_test, y_test, *_ = next(iter(dm.test_dataloader()))
-    assert x_test.shape == (consts["BATCH_SIZE"], consts["INPUT_SIZE"])
-    assert y_test.shape == (consts["BATCH_SIZE"],)
+    assert x_test.shape == (config["BATCH_SIZE"], INPUT_SIZE)
+    assert y_test.shape == (config["BATCH_SIZE"],)
     assert all(y_test == -1)
