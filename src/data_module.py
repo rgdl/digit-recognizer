@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
 from config import get_config  # script-gen: config.py
+from file_reader import read_pickle  # script-gen: file_reader.py
 
 config = get_config()
 BatchType = Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
@@ -44,7 +45,7 @@ class DataModule(pl.LightningDataModule):
     def __init__(self, fold: int):
         super().__init__()
         self.fold = fold
-        self.all_data = pd.read_pickle(config["DATA"])
+        self.all_data = read_pickle(config["DATA"])
 
         assert 0 <= fold <= self.all_data["fold"].max()
 
@@ -55,11 +56,12 @@ class DataModule(pl.LightningDataModule):
     def train_dataloader(self):
         data = self.all_data.loc[self._train_rows].drop("fold", axis=1)
         ds = Dataset(data)
-        return DataLoader(
+        result = DataLoader(
             ds,
             **self.COMMON_DATA_LOADER_ARGS,  # type: ignore
             shuffle=True,
         )
+        return result
 
     def val_dataloader(self):
         data = self.all_data.loc[self._valid_rows].drop("fold", axis=1)

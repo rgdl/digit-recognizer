@@ -1,7 +1,8 @@
 from typing import Any
 from typing import Dict
 
-from consts import PROCESSED_DATA_DIR
+from consts import IS_LOCAL  # script-gen: consts.py
+from consts import PROCESSED_DATA_DIR  # script-gen: consts.py
 
 _config = None
 
@@ -13,19 +14,17 @@ def get_config() -> Dict[str, Any]:
     """
     global _config
     if _config is None:
-
-        DATA = PROCESSED_DATA_DIR / "micro.pickle"
-
-        assert DATA.exists()
-
         _config = {
             # Training parameters
-            "N_WORKERS": 4,
             "BATCH_SIZE": 32,
             "MAX_EPOCHS": 3,
             # Data prep
             "N_FOLDS": 5,
             # File paths
-            "DATA": DATA,
+            "DATA": PROCESSED_DATA_DIR / "micro.pickle",
         }
+        if IS_LOCAL:
+            _config["N_WORKERS"] = 0
+        else:
+            _config["N_WORKERS"] = 2
     return _config

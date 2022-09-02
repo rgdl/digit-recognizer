@@ -7,10 +7,21 @@ from pathlib import Path
 
 # Paths
 ROOT_DIR = Path(__file__).parent.parent
-DATA_DIR = ROOT_DIR / "data"
-RAW_DATA_DIR = DATA_DIR / "raw"
-PROCESSED_DATA_DIR = DATA_DIR / "processed"
-OUTPUT_DATA_DIR = DATA_DIR / "output"
+IS_LOCAL = (ROOT_DIR / ".local").exists()
+if IS_LOCAL:
+    DATA_DIR = ROOT_DIR / "data"
+    RAW_DATA_DIR = DATA_DIR / "raw"
+    PROCESSED_DATA_DIR = DATA_DIR / "processed"
+    OUTPUT_DATA_DIR = DATA_DIR / "output"
+    DEVICES = None
+    ACCELERATOR = None
+else:
+    DATA_DIR = ROOT_DIR
+    RAW_DATA_DIR = DATA_DIR / "input/digit-recognizer"
+    PROCESSED_DATA_DIR = DATA_DIR
+    OUTPUT_DATA_DIR = DATA_DIR
+    DEVICES = 1
+    ACCELERATOR = "gpu"
 
 # Dataset properties
 TEST_DATA_ROWS = 28000

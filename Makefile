@@ -3,8 +3,11 @@
 # TODO: can I use Make's feature of checking dependencies before rerunning?
 
 tests:
-	coverage run -m pytest test --durations 20
+	coverage run -m pytest test --durations 20 --profile
 	coverage report -i
+
+profile-results:
+	python -c "import pstats; p = pstats.Stats('prof/combined.prof');  p.sort_stats('cumtime'); p.print_stats('digit-recognizer')"
 
 train-local:
 	python src/train.py

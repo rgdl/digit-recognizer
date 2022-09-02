@@ -2,12 +2,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from config import get_config
-from consts import MICRO_DATA_PROPORTION
-from consts import MINI_DATA_PROPORTION
-from consts import PROCESSED_DATA_DIR
-from consts import RAW_DATA_DIR
-from consts import SEED
+from config import get_config  # script-gen: config.py
+from consts import MICRO_DATA_PROPORTION  # script-gen: consts.py
+from consts import MINI_DATA_PROPORTION  # script-gen: consts.py
+from consts import PROCESSED_DATA_DIR  # script-gen: consts.py
+from consts import RAW_DATA_DIR  # script-gen: consts.py
+from consts import SEED  # script-gen: consts.py
 
 config = get_config()
 

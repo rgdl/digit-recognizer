@@ -10,4 +10,4 @@ if __name__ == "__main__":
         log = json.load(f)
 
     for item in log:
-        print(item["data"], file=getattr(sys, item["stream_name"]))
+        print(item["data"], file=getattr(sys, item["stream_name"]), end="")

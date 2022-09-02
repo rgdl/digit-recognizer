@@ -1,15 +1,37 @@
-import pandas as pd
 import pytest
 import torch
 
 from config import get_config
+from consts import DATA_DIR
 from consts import N_CLASSES
 from consts import PROCESSED_DATA_DIR
+from file_reader import read_csv
+from file_reader import read_pickle
 from models import BasicLinearModel
 from models import ModelTools
 from train import ModelTrainer
 
 config = get_config()
+
+
+@pytest.fixture(scope="session")
+def untrained_model():
+    # Override config for no training at all, but using full dataset
+    config["DATA"] = PROCESSED_DATA_DIR / "full.pickle"
+    config["MAX_EPOCHS"] = 0
+    config["N_FOLDS"] = 1
+
+    mt = ModelTrainer(
+        BasicLinearModel,
+        ModelTools(
+            opt_class=torch.optim.SGD,
+            opt_args={"lr": 1e-3},
+            loss_func=torch.nn.functional.cross_entropy,
+        ),
+    )
+
+    mt.fit()
+    return mt
 
 
 @pytest.fixture(scope="session")
@@ -57,7 +79,7 @@ def test_output_summary(trained_model):
         "correct",
         "fold",
     )
-    assert len(df) == len(pd.read_pickle(config["DATA"]))
+    assert len(df) == len(read_pickle(config["DATA"]))
 
     assert df["label"].dtype == int
     assert df["label"].min() == -1
@@ -80,3 +102,12 @@ def test_output_summary(trained_model):
     # This is the current training fold, so never -1
     assert df["fold"].min() == 0
     assert df["fold"].max() == config["N_FOLDS"] - 1
+
+
+def test_make_submission(untrained_model):
+    submission = untrained_model.make_submission()
+    sample_submission = read_csv(DATA_DIR / "sample_submission.csv")
+    assert tuple(submission.columns) == ("ImageId", "Label")
+    assert len(submission) == len(sample_submission)
+    assert (submission["ImageId"] == sample_submission["ImageId"]).all()
+    assert sample_submission["Label"].isin(range(0, 10)).all()

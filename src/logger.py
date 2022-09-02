@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.utilities.distributed import rank_zero_only
 
 
-class Logger(pl.loggers.logger.Logger):
+class Logger(pl.loggers.LightningLoggerBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.metrics: List[Dict[str, Any]] = []

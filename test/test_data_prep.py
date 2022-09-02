@@ -9,6 +9,7 @@ from config import get_config
 from consts import MICRO_DATA_PROPORTION
 from consts import MINI_DATA_PROPORTION
 from consts import PROCESSED_DATA_DIR
+from file_reader import read_pickle
 from prep_data import main
 
 REBUILD_DATASETS = False
@@ -22,12 +23,12 @@ def datasets() -> Dict[str, pd.DataFrame]:
             td = Path(_td)
             main(output_dir=td)
             return {
-                name: pd.read_pickle(td / f"{name}.pickle")
+                name: read_pickle(td / f"{name}.pickle")
                 for name in ("full", "mini", "micro")
             }
     else:
         return {
-            name: pd.read_pickle(PROCESSED_DATA_DIR / f"{name}.pickle")
+            name: read_pickle(PROCESSED_DATA_DIR / f"{name}.pickle")
             for name in ("full", "mini", "micro")
         }
 
