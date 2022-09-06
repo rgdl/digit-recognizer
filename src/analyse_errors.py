@@ -6,17 +6,32 @@ We want to know:
     * confusion matrix
     * movement of train and validation loss during training
 """
+import math
 import sys
 from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt  # type: ignore
+import numpy as np
 import pandas as pd
 import seaborn as sns  # type: ignore
 
 from config import get_config
 
 config = get_config()
+
+
+def subplotter(title: str):
+    """
+    Encapsulate some of the messy logic with matplotlib's subplots
+    """
+    fig, ax = plt.subplots(2, math.ceil(config["N_FOLDS"] / 2))
+    fig.suptitle(title)
+
+    rows, cols = ax.shape
+    for row in range(rows):
+        for col in range(cols):
+            yield ax[row][col]
 
 
 class Analyser:
@@ -26,12 +41,17 @@ class Analyser:
         self.data = pd.read_pickle(config["DATA"])
 
     def view_training_metrics(self, output_file: Optional[str] = None) -> None:
-        plt.figure()
-        for col in ("train_accuracy", "val_accuracy"):
-            plot_df = self.metrics.dropna(subset=[col])
-            plt.plot(plot_df["step"], plot_df[col], label=col)
-        plt.legend()
-        plt.title("Accuracy Values During Training")
+        axes = subplotter("Accuracy Values During Training")
+        for fold in range(config["N_FOLDS"]):
+            ax = next(axes)
+            for col in ("train_accuracy", "val_accuracy"):
+                plot_df = self.metrics.loc[lambda d: d["fold"] == fold].dropna(
+                    subset=[col]
+                )
+                ax.plot(plot_df["step"], plot_df[col], label=col)
+                ax.set_title(f"Fold {fold}")
+            if fold == 0:
+                ax.legend()
         if output_file:
             plt.savefig(output_file)
         else:
@@ -50,8 +70,10 @@ class Analyser:
         assert conf_mat.shape[0] == conf_mat.shape[1]
         return conf_mat
 
-    def view_confusion_matrix(self):
+    def view_confusion_matrix(self, hide_diagonals: bool = False):
         cm = self.get_confusion_matrix()
+        if hide_diagonals:
+            np.fill_diagonal(cm.values, 0)
         sns.heatmap(cm)
         plt.show()
 
@@ -82,12 +104,11 @@ class Analyser:
             label = row["label"]
             pred = row["pred"]
             conf = row[f"prob_{pred}"]
-            is_valid = row["is_valid"]
             plt.title(
                 "\n".join(
                     [
                         f"Label: {label}, Pred: {pred} ({100 * conf:.2f}%)",
-                        "Validation set" if is_valid else "Training set",
+                        f"Fold {row['fold']}",
                     ]
                 )
             )
@@ -96,7 +117,6 @@ class Analyser:
 
 
 # TODO: method to run other functions to create an html report with the images
-# TODO: this should be able to contain data from all folds somehow
 
 
 class LogDir:
@@ -113,5 +133,5 @@ if __name__ == "__main__":
 
     analyser = Analyser(log_dir.metrics, log_dir.outputs)
     analyser.view_training_metrics()
-    analyser.view_confusion_matrix()
+    analyser.view_confusion_matrix(hide_diagonals=True)
     analyser.most_confidently_wrong()

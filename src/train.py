@@ -44,8 +44,11 @@ class EvaluationResult:
     def save(self):
         output_dir = OUTPUT_DATA_DIR / "evaluation"
         output_dir.mkdir(exist_ok=True)
-        self.metrics.to_csv(output_dir / "metrics.csv")
-        self.output_summary.to_csv(output_dir / "output_summary.csv")
+        self.metrics.to_csv(output_dir / "metrics.csv", index=False)
+        self.output_summary.to_csv(
+            output_dir / "output_summary.csv",
+            index=False,
+        )
 
 
 class ModelTrainer:
@@ -58,7 +61,7 @@ class ModelTrainer:
         Train `model` with `model_tools` and return the validation loss
         Hyperparameter tuning will then aim to minimise this value.
         """
-        # TODO: get modelclass and model tools from config/config
+        # TODO: get modelclass and model tools from consts/config
         self.ModelClass = ModelClass
         self.model_tools = model_tools
         self.logger = Logger()
@@ -66,7 +69,7 @@ class ModelTrainer:
 
     def fit(self) -> None:
         for fold in range(config["N_FOLDS"]):
-            model = self.ModelClass(self.model_tools)
+            model = self.ModelClass(self.model_tools, {"fold": fold})
             datamodule = DataModule(fold)
             trainer = pl.Trainer(
                 logger=self.logger,
@@ -167,8 +170,6 @@ if __name__ == "__main__":
     if not IS_LOCAL:
         # TODO: rename this function
         main(PROCESSED_DATA_DIR)
-
-    config["N_FOLDS"] = 2
 
     print(
         "Training with config:",

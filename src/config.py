@@ -16,8 +16,8 @@ def get_config() -> Dict[str, Any]:
     if _config is None:
         _config = {
             # Training parameters
-            "BATCH_SIZE": 32,
-            "MAX_EPOCHS": 3,
+            "BATCH_SIZE": 64,
+            "MAX_EPOCHS": 10,
             # Data prep
             "N_FOLDS": 5,
             # File paths

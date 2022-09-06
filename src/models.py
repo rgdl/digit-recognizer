@@ -25,9 +25,10 @@ class ModelTools:
 
 
 class BaseModel(pl.LightningModule):
-    def __init__(self, tools: ModelTools) -> None:
+    def __init__(self, tools: ModelTools, context: Dict[str, Any] = {}) -> None:
         super().__init__()
         self.tools = tools
+        self.context = context
 
     def training_step(  # type: ignore
         self,
@@ -39,7 +40,7 @@ class BaseModel(pl.LightningModule):
         loss = self.tools.loss_func(pred, y)
         accuracy = (pred.argmax(dim=1) == y).float().mean()
         self.log_dict(
-            {"train_loss": loss, "train_accuracy": accuracy},
+            {"train_loss": loss, "train_accuracy": accuracy, **self.context},
             on_step=False,
             on_epoch=True,
         )
@@ -55,7 +56,7 @@ class BaseModel(pl.LightningModule):
         loss = self.tools.loss_func(pred, y)
         accuracy = (pred.argmax(dim=1) == y).float().mean()
         self.log_dict(
-            {"val_loss": loss, "val_accuracy": accuracy},
+            {"val_loss": loss, "val_accuracy": accuracy, **self.context},
             on_step=False,
             on_epoch=True,
         )
@@ -75,8 +76,8 @@ class AlwaysSayZeroModel(BaseModel):
 class BasicLinearModel(BaseModel):
     """Something simple but trainable"""
 
-    def __init__(self, tools: ModelTools) -> None:
-        super().__init__(tools)
+    def __init__(self, tools: ModelTools, context: Dict[str, Any] = {}) -> None:
+        super().__init__(tools, context)
         hidden_layer_size = INPUT_SIZE // 2
         self.net = torch.nn.Sequential(
             torch.nn.Linear(INPUT_SIZE, hidden_layer_size),
