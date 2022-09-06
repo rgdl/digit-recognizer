@@ -21,10 +21,11 @@ def get_config() -> Dict[str, Any]:
             # Data prep
             "N_FOLDS": 5,
             # File paths
-            "DATA": PROCESSED_DATA_DIR / "micro.pickle",
+            "DATA": PROCESSED_DATA_DIR / "full.pickle",
         }
         if IS_LOCAL:
             _config["N_WORKERS"] = 0
         else:
             _config["N_WORKERS"] = 2
+            _config["DATA"] = PROCESSED_DATA_DIR / "full.pickle"
     return _config

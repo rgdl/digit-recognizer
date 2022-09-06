@@ -7,6 +7,7 @@ Train the models!
     * actual training
 """
 from dataclasses import dataclass
+import json
 from typing import List
 from typing import Type
 
@@ -18,12 +19,12 @@ from torch.utils.data import DataLoader
 
 from config import get_config  # script-gen: config.py
 from consts import ACCELERATOR  # script-gen: consts.py
-from consts import DATA_DIR  # script-gen: consts.py
 from consts import DEVICES  # script-gen: consts.py
 from consts import IS_LOCAL  # script-gen: consts.py
 from consts import N_CLASSES  # script-gen: consts.py
 from consts import OUTPUT_DATA_DIR  # script-gen: consts.py
 from consts import PROCESSED_DATA_DIR  # script-gen: consts.py
+from consts import RAW_DATA_DIR  # script-gen: consts.py
 from data_module import DataModule  # script-gen: data_module.py
 from file_reader import read_csv  # script-gen: file_reader.py
 from logger import Logger  # script-gen: models.py
@@ -83,12 +84,20 @@ class ModelTrainer:
         assert (
             config["DATA"].stem == "full"
         ), "This function will not work on a partial dataset"
-        submission = read_csv(DATA_DIR / "sample_submission.csv")
+        submission = read_csv(RAW_DATA_DIR / "sample_submission.csv")
         eval_result = self.evaluate()
-        predictions = eval_result.output_summary.loc[
-            eval_result.output_summary["label"] == -1, "pred"
-        ]
-        assert len(predictions) == len(submission)
+        predictions = (
+            eval_result.output_summary
+            .loc[eval_result.output_summary["label"] == -1]
+            .groupby("img_index")
+            [[col for col in eval_result.output_summary if col.startswith("prob_")]]
+            .mean()
+            .idxmax(axis=1)
+            .apply(lambda label: int(label.split("_")[-1]))
+        )
+        assert (
+            len(predictions) == len(submission)
+        ), "Something went wrong, there are the wrong number of predictions"
         return submission.assign(Label=predictions)
 
     def _get_dataset_summary(
@@ -151,7 +160,12 @@ class ModelTrainer:
 
 if __name__ == "__main__":
     if not IS_LOCAL:
+        # TODO: rename this function
         main(PROCESSED_DATA_DIR)
+
+    config["N_FOLDS"] = 2
+
+    print("Training with config:", json.dumps(config))
 
     mt = ModelTrainer(
         BasicLinearModel,
@@ -164,5 +178,9 @@ if __name__ == "__main__":
     )
 
     mt.fit()
-    result = mt.evaluate()
-    result.save()
+    if IS_LOCAL:
+        result = mt.evaluate()
+        result.save()
+    else:
+        submission = mt.make_submission()
+        submission.to_csv("submission.csv", index=False)
