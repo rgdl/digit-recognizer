@@ -6,8 +6,8 @@ Train the models!
     * hyper-parameter tuning
     * actual training
 """
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from typing import List
 from typing import Type
 
@@ -86,17 +86,22 @@ class ModelTrainer:
         ), "This function will not work on a partial dataset"
         submission = read_csv(RAW_DATA_DIR / "sample_submission.csv")
         eval_result = self.evaluate()
+        probability_cols = [
+            str(col)
+            for col in eval_result.output_summary
+            if str(col).startswith("prob_")
+        ]
         predictions = (
-            eval_result.output_summary
-            .loc[eval_result.output_summary["label"] == -1]
-            .groupby("img_index")
-            [[col for col in eval_result.output_summary if col.startswith("prob_")]]
+            eval_result.output_summary.loc[
+                eval_result.output_summary["label"] == -1
+            ]
+            .groupby("img_index")[probability_cols]
             .mean()
             .idxmax(axis=1)
             .apply(lambda label: int(label.split("_")[-1]))
         )
-        assert (
-            len(predictions) == len(submission)
+        assert len(predictions) == len(
+            submission
         ), "Something went wrong, there are the wrong number of predictions"
         return submission.assign(Label=predictions)
 
@@ -165,7 +170,10 @@ if __name__ == "__main__":
 
     config["N_FOLDS"] = 2
 
-    print("Training with config:", json.dumps(config))
+    print(
+        "Training with config:",
+        json.dumps({k: str(v) for k, v in config.items()}),
+    )
 
     mt = ModelTrainer(
         BasicLinearModel,

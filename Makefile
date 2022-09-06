@@ -31,4 +31,4 @@ submit:
 	kaggle competitions submit \
 		-f data/output/kaggle_logs/submission.csv \
 		-m b347239b309f0f6f911f7ccc0fb8e6536f8a4a91 \
-		competition digit-recognizer
+		digit-recognizer

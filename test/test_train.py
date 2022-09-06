@@ -2,9 +2,9 @@ import pytest
 import torch
 
 from config import get_config
-from consts import DATA_DIR
 from consts import N_CLASSES
 from consts import PROCESSED_DATA_DIR
+from consts import RAW_DATA_DIR
 from file_reader import read_csv
 from file_reader import read_pickle
 from models import BasicLinearModel
@@ -106,7 +106,7 @@ def test_output_summary(trained_model):
 
 def test_make_submission(untrained_model):
     submission = untrained_model.make_submission()
-    sample_submission = read_csv(DATA_DIR / "sample_submission.csv")
+    sample_submission = read_csv(RAW_DATA_DIR / "sample_submission.csv")
     assert tuple(submission.columns) == ("ImageId", "Label")
     assert len(submission) == len(sample_submission)
     assert (submission["ImageId"] == sample_submission["ImageId"]).all()
