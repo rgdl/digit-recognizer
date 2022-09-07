@@ -27,6 +27,7 @@ class ScriptGenerator:
         self.root_dir = main_script_path.parent
         self.output_file_path = output_file_path
         self.imported_modules: Set[Path] = set()
+        self.in_name_eq_main_block = False  # No printing while this is True
 
     @staticmethod
     def detect_script_gen_tag(line: str) -> Optional[Path]:
@@ -53,6 +54,14 @@ class ScriptGenerator:
     def _insert_one_line(self, line: str) -> None:
         print(line, file=self._outfile, end="")
 
+    def _is_name_eq_main_start(self, line: str) -> bool:
+        return (not self.in_name_eq_main_block) and bool(
+            re.search("""if __name__ == ['"]+__main__['"]+:""", line)
+        )
+
+    def _is_name_eq_main_end(self, line: str) -> bool:
+        return self.in_name_eq_main_block and bool(re.search(r"^\S", line))
+
     def insert_lines(
         self,
         lines: Iterable[str],
@@ -61,12 +70,22 @@ class ScriptGenerator:
     ) -> None:
         if header is not None:
             self._insert_one_line(header)
+
         for line in lines:
+            if self._is_name_eq_main_start(line):
+                self.in_name_eq_main_block = True
+            elif self._is_name_eq_main_end(line):
+                self.in_name_eq_main_block = False
+            if self.in_name_eq_main_block:
+                continue
+
             file_to_import = self.detect_script_gen_tag(line)
+
             if file_to_import is not None:
                 if file_to_import in self.imported_modules:
                     continue
                 self.imported_modules.add(file_to_import)
+
                 with open(self.root_dir / file_to_import, "r") as f:
                     self.insert_lines(
                         f,
@@ -74,7 +93,9 @@ class ScriptGenerator:
                         footer=f"### End of '{file_to_import}' ###\n",
                     )
                 continue
+
             self._insert_one_line(line)
+
         if footer is not None:
             self._insert_one_line(footer)
 

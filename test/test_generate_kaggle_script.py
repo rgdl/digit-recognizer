@@ -165,3 +165,43 @@ def test_nested_import():
             "",
             "x = imported_func()",
         ]
+
+
+def test_exclude_name_eq_main_block():
+    with TemporaryDirectory() as td:
+        imported = Path(td, "imported.py")
+        main = Path(td, "main.py")
+        output = Path(td, "output.py")
+
+        _write_lines_to_file(
+            [
+                "def func():",
+                "    return 'hi!'",
+                "",
+                "if __name__ == '__main__':",
+                "    print('hello')",
+                "",
+                "a = 1",
+            ],
+            imported,
+        )
+        _write_lines_to_file(
+            [
+                "from imported import func" + _build_tag(main, imported),
+                "",
+                "x = func()",
+            ],
+            main,
+        )
+
+        ScriptGenerator(main, output).run()
+        assert _get_file_lines(output) == [
+            "### Contents of 'imported.py' ###",
+            "def func():",
+            "    return 'hi!'",
+            "",
+            "a = 1",
+            "### End of 'imported.py' ###",
+            "",
+            "x = func()",
+        ]
