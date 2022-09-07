@@ -17,6 +17,7 @@ from data_module import BatchType  # script-gen: data_module.py
 LossFuncType = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 
 
+# TODO: What else should this class do? Is there a reason for it to exist?
 @dataclass
 class ModelTools:
     opt_class: Type
@@ -25,7 +26,11 @@ class ModelTools:
 
 
 class BaseModel(pl.LightningModule):
-    def __init__(self, tools: ModelTools, context: Dict[str, Any] = {}) -> None:
+    def __init__(
+        self,
+        tools: ModelTools,
+        context: Dict[str, Any] = {},
+    ) -> None:
         super().__init__()
         self.tools = tools
         self.context = context
@@ -76,7 +81,11 @@ class AlwaysSayZeroModel(BaseModel):
 class BasicLinearModel(BaseModel):
     """Something simple but trainable"""
 
-    def __init__(self, tools: ModelTools, context: Dict[str, Any] = {}) -> None:
+    def __init__(
+        self,
+        tools: ModelTools,
+        context: Dict[str, Any] = {},
+    ) -> None:
         super().__init__(tools, context)
         hidden_layer_size = INPUT_SIZE // 2
         self.net = torch.nn.Sequential(

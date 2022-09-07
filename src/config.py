@@ -15,9 +15,15 @@ def get_config() -> Dict[str, Any]:
     global _config
     if _config is None:
         _config = {
+            # Architectural parameters
+            "ARCHITECTURE": "BasicLinearModel",
             # Training parameters
             "BATCH_SIZE": 64,
             "MAX_EPOCHS": 10,
+            "OPTIM_CLASS": "SGD",
+            "OPTIM_PARAMS": {"lr": 1e-3},
+            "LOSS_FUNC_CLASS": "CrossEntropyLoss",
+            "LOSS_FUNC_PARAMS": {},
             # Data prep
             "N_FOLDS": 5,
             # File paths

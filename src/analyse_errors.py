@@ -45,9 +45,8 @@ class Analyser:
         for fold in range(config["N_FOLDS"]):
             ax = next(axes)
             for col in ("train_accuracy", "val_accuracy"):
-                plot_df = self.metrics.loc[lambda d: d["fold"] == fold].dropna(
-                    subset=[col]
-                )
+                plot_df = self.metrics.dropna(subset=[col])
+                plot_df = plot_df.loc[plot_df["fold"] == fold]
                 ax.plot(plot_df["step"], plot_df[col], label=col)
                 ax.set_title(f"Fold {fold}")
             if fold == 0:

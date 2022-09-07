@@ -16,7 +16,6 @@ analyse-errors:
 	python src/analyse_errors.py data/output/evaluation
 
 tune-hyperparameters:
-	# Use optuna like so: https://www.pytorchlightning.ai/blog/using-optuna-to-optimize-pytorch-lightning-hyperparameters
 	echo "tune-hyperparameters not implemented yet"
 
 run-in-kaggle:

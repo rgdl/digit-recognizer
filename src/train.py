@@ -27,9 +27,9 @@ from consts import PROCESSED_DATA_DIR  # script-gen: consts.py
 from consts import RAW_DATA_DIR  # script-gen: consts.py
 from data_module import DataModule  # script-gen: data_module.py
 from file_reader import read_csv  # script-gen: file_reader.py
-from logger import Logger  # script-gen: models.py
-from models import BaseModel  # script-gen: logger.py
-from models import BasicLinearModel  # script-gen: models.py
+from logger import Logger  # script-gen: logger.py
+from models import BaseModel  # script-gen: models.py
+from models import BasicLinearModel  # noqa: F401 # script-gen: models.py
 from models import ModelTools  # script-gen: logger.py
 from prep_data import main  # script-gen: prep_data.py
 
@@ -177,12 +177,13 @@ if __name__ == "__main__":
     )
 
     mt = ModelTrainer(
-        BasicLinearModel,
+        locals()[config["ARCHITECTURE"]],
         ModelTools(
-            # TODO: bundle into OptimiserArgs
-            opt_class=torch.optim.SGD,
-            opt_args={"lr": 1e-3},
-            loss_func=torch.nn.functional.cross_entropy,
+            opt_class=getattr(torch.optim, config["OPTIM_CLASS"]),
+            opt_args=config["OPTIM_PARAMS"],
+            loss_func=getattr(torch.nn, config["LOSS_FUNC_CLASS"])(
+                **config["LOSS_FUNC_PARAMS"]
+            ),
         ),
     )
 
