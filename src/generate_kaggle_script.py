@@ -55,7 +55,7 @@ class ScriptGenerator:
         print(line, file=self._outfile, end="")
 
     def _is_name_eq_main_start(self, line: str) -> bool:
-        return (not self.in_name_eq_main_block) and bool(
+        return not self.in_name_eq_main_block and bool(
             re.search("""if __name__ == ['"]+__main__['"]+:""", line)
         )
 
@@ -65,6 +65,7 @@ class ScriptGenerator:
     def insert_lines(
         self,
         lines: Iterable[str],
+        in_main_file: bool = True,
         header: Optional[str] = None,
         footer: Optional[str] = None,
     ) -> None:
@@ -76,7 +77,7 @@ class ScriptGenerator:
                 self.in_name_eq_main_block = True
             elif self._is_name_eq_main_end(line):
                 self.in_name_eq_main_block = False
-            if self.in_name_eq_main_block:
+            if self.in_name_eq_main_block and not in_main_file:
                 continue
 
             file_to_import = self.detect_script_gen_tag(line)
@@ -89,6 +90,7 @@ class ScriptGenerator:
                 with open(self.root_dir / file_to_import, "r") as f:
                     self.insert_lines(
                         f,
+                        in_main_file=False,
                         header=f"### Contents of '{file_to_import}' ###\n",
                         footer=f"### End of '{file_to_import}' ###\n",
                     )

@@ -176,6 +176,8 @@ if __name__ == "__main__":
         json.dumps({k: str(v) for k, v in config.items()}),
     )
 
+    # TODO: no need for all of these to be passed in now. Instead, grab them
+    # TODO: from config just before we need them
     mt = ModelTrainer(
         locals()[config["ARCHITECTURE"]],
         ModelTools(
@@ -193,4 +195,4 @@ if __name__ == "__main__":
         result.save()
     else:
         submission = mt.make_submission()
-        submission.to_csv("submission.csv", index=False)
+        submission.to_csv(OUTPUT_DATA_DIR / "submission.csv", index=False)

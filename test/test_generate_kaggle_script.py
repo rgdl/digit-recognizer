@@ -167,7 +167,7 @@ def test_nested_import():
         ]
 
 
-def test_exclude_name_eq_main_block():
+def test_exclude_name_eq_main_block_from_imports():
     with TemporaryDirectory() as td:
         imported = Path(td, "imported.py")
         main = Path(td, "main.py")
@@ -190,6 +190,9 @@ def test_exclude_name_eq_main_block():
                 "from imported import func" + _build_tag(main, imported),
                 "",
                 "x = func()",
+                "",
+                "if __name__ == '__main__':",
+                "    print('bye')",
             ],
             main,
         )
@@ -204,4 +207,7 @@ def test_exclude_name_eq_main_block():
             "### End of 'imported.py' ###",
             "",
             "x = func()",
+            "",
+            "if __name__ == '__main__':",
+            "    print('bye')",
         ]

@@ -1,6 +1,5 @@
 # TODO: in time this might need to become it's own CLI
 # TODO: but does that give any benefit over Make? Better handling of CL args for one
-# TODO: can I use Make's feature of checking dependencies before rerunning?
 
 tests:
 	coverage run -m pytest test --durations 20 --profile
@@ -9,19 +8,28 @@ tests:
 profile-results:
 	python -c "import pstats; p = pstats.Stats('prof/combined.prof');  p.sort_stats('cumtime'); p.print_stats('digit-recognizer')"
 
+tune-local:
+	python src/tune.py
+
+tune-kaggle:
+	python src/generate_kaggle_script.py src/tune.py gen/main.py
+	bin/generate-kernel-metadata.sh
+	kaggle kernels push -p gen
+
 train-local:
 	python src/train.py
 
-analyse-errors:
-	python src/analyse_errors.py data/output/evaluation
-
-tune-hyperparameters:
-	echo "tune-hyperparameters not implemented yet"
-
-run-in-kaggle:
+train-kaggle:
 	python src/generate_kaggle_script.py src/train.py gen/main.py
 	bin/generate-kernel-metadata.sh
 	kaggle kernels push -p gen
+
+analyse-errors:
+	# TODO: Local train results only - kaggle version too?
+	python src/analyse_errors.py data/output/evaluation
+
+analyse-tuning:
+	python src/analyse_tuning.py data/output/kaggle_logs/tune.pickle
 
 get-kaggle-results:
 	bin/get-kaggle-results.sh
@@ -29,5 +37,5 @@ get-kaggle-results:
 submit:
 	kaggle competitions submit \
 		-f data/output/kaggle_logs/submission.csv \
-		-m b347239b309f0f6f911f7ccc0fb8e6536f8a4a91 \
+		-m $(git rev-parse HEAD) \
 		digit-recognizer

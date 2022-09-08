@@ -19,7 +19,7 @@ else:
     DATA_DIR = ROOT_DIR
     RAW_DATA_DIR = DATA_DIR / "input/digit-recognizer"
     PROCESSED_DATA_DIR = DATA_DIR
-    OUTPUT_DATA_DIR = DATA_DIR / "output"
+    OUTPUT_DATA_DIR = DATA_DIR / "working"
     DEVICES = 1
     ACCELERATOR = "gpu"
 
