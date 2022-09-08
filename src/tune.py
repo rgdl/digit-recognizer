@@ -12,7 +12,7 @@ from consts import OUTPUT_DATA_DIR  # script-gen: consts.py
 from consts import PROCESSED_DATA_DIR  # script-gen: consts.py
 from models import BasicLinearModel  # noqa: F401 # script-gen: models.py
 from models import ModelTools  # script-gen: models.py
-from prep_data import main  # script-gen: prep_data.py
+from prep_data import prep_data  # script-gen: prep_data.py
 from train import ModelTrainer  # script-gen: train.py
 
 config = get_config()
@@ -56,8 +56,7 @@ def objective(trial):
 
 if __name__ == "__main__":
     if not IS_LOCAL:
-        # TODO: rename this function
-        main(PROCESSED_DATA_DIR)
+        prep_data(PROCESSED_DATA_DIR)
 
     # TODO: pruning? Maybe if gradients explode or collapse?
     study = optuna.create_study(direction="minimize")

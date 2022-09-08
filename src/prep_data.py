@@ -12,7 +12,7 @@ from consts import SEED  # script-gen: consts.py
 config = get_config()
 
 
-def main(output_dir: Path) -> None:
+def prep_data(output_dir: Path) -> None:
     train_df = pd.read_csv(RAW_DATA_DIR / "train.csv").sort_values("label")
     train_df["fold"] = [i % config["N_FOLDS"] for i in range(len(train_df))]
     train_df = train_df.sort_index()
@@ -31,4 +31,4 @@ def main(output_dir: Path) -> None:
 
 
 if __name__ == "__main__":
-    main(PROCESSED_DATA_DIR)
+    prep_data(PROCESSED_DATA_DIR)

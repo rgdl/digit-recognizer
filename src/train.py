@@ -31,7 +31,7 @@ from logger import Logger  # script-gen: logger.py
 from models import BaseModel  # script-gen: models.py
 from models import BasicLinearModel  # noqa: F401 # script-gen: models.py
 from models import ModelTools  # script-gen: logger.py
-from prep_data import main  # script-gen: prep_data.py
+from prep_data import prep_data  # script-gen: prep_data.py
 
 config = get_config()
 
@@ -61,7 +61,6 @@ class ModelTrainer:
         Train `model` with `model_tools` and return the validation loss
         Hyperparameter tuning will then aim to minimise this value.
         """
-        # TODO: get modelclass and model tools from consts/config
         self.ModelClass = ModelClass
         self.model_tools = model_tools
         self.logger = Logger()
@@ -168,8 +167,7 @@ class ModelTrainer:
 
 if __name__ == "__main__":
     if not IS_LOCAL:
-        # TODO: rename this function
-        main(PROCESSED_DATA_DIR)
+        prep_data(PROCESSED_DATA_DIR)
 
     print(
         "Training with config:",

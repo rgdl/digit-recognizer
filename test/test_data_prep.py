@@ -10,7 +10,7 @@ from consts import MICRO_DATA_PROPORTION
 from consts import MINI_DATA_PROPORTION
 from consts import PROCESSED_DATA_DIR
 from file_reader import read_pickle
-from prep_data import main
+from prep_data import prep_data
 
 REBUILD_DATASETS = False
 config = get_config()
@@ -21,7 +21,7 @@ def datasets() -> Dict[str, pd.DataFrame]:
     if REBUILD_DATASETS:
         with TemporaryDirectory() as _td:
             td = Path(_td)
-            main(output_dir=td)
+            prep_data(output_dir=td)
             return {
                 name: read_pickle(td / f"{name}.pickle")
                 for name in ("full", "mini", "micro")
